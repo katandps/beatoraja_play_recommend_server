@@ -7,7 +7,7 @@ phases:
     commands:
       - curl https://sh.rustup.rs -sSf > install.sh
       - sh install.sh -y
-      - source $HOME/.cargo/env
+      - . $HOME/.cargo/env
   pre_build:
     commands:
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
