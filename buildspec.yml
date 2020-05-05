@@ -5,7 +5,7 @@ phases:
     runtime-versions:
       docker: 18
     commands:
-      - curl https://sh.rustup.rs -sSf | sh
+      - curl https://sh.rustup.rs -sSf | sh -y
   pre_build:
     commands:
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
