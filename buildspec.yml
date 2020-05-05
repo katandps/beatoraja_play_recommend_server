@@ -1,15 +1,14 @@
 version: 0.2
 
 phases:
-  install:
-    pre_build:
+  pre_build:
+    commands:
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      -
+    build:
       commands:
-        - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-        -
-      build:
-        commands:
-          - cargo build --release
-          - docker build -t $TARGET_IMAGE_NAME:$CODEBUILD_SOURCE_VERSION
-      post_build:
-        commands:
-          - docker push $TARGET_IMAGE_NAME:$CODEBUILD_SOURCE_VERSION
+        - cargo build --release
+        - docker build -t $TARGET_IMAGE_NAME:$CODEBUILD_SOURCE_VERSION
+    post_build:
+      commands:
+        - docker push $TARGET_IMAGE_NAME:$CODEBUILD_SOURCE_VERSION
