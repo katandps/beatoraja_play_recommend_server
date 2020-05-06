@@ -18,3 +18,4 @@ phases:
   post_build:
     commands:
       - docker push $TARGET_IMAGE_NAME:$CODEBUILD_SOURCE_VERSION
+      - docker push $TARGET_IMAGE_NAME:latest
