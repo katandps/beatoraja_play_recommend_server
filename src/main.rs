@@ -5,7 +5,7 @@ fn index(req: HttpRequest) -> HttpResponse {
     HttpResponse::from("Hello World")
 }
 fn main() {
-    run("0.0.0.0:8000");
+    run("0.0.0.0:80");
 }
 
 #[actix_rt::main]
