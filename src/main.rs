@@ -2,10 +2,12 @@ use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
 
 fn index(req: HttpRequest) -> HttpResponse {
-    HttpResponse::from("Hello World")
+    HttpResponse::from(beatoraja_play_recommend::take())
 }
 fn main() {
-    run("0.0.0.0:80");
+    println!("Listen started at port 80");
+    let res = run("0.0.0.0:80");
+    println!("{:?}", res);
 }
 
 #[actix_rt::main]

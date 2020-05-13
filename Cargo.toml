@@ -9,5 +9,10 @@ edition = "2018"
 [dependencies]
 actix-web = "3.0.0-alpha.1"
 env_logger = "0.7.1"
-serde = {version = "1.0.106", feature = ["derive"]}
+serde = "1.0.106"
+#serde = {version = "1.0.106", feature = ["derive"]}
 actix-rt = "1.1.1"
+
+beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git"}
+#開発用
+#beatoraja_play_recommend = {path = "../beatoraja_play_recommend"}
