@@ -1,7 +1,10 @@
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
+use beatoraja_play_recommend::*;
 
 fn index(req: HttpRequest) -> HttpResponse {
+    let client = mysql::MySQLClient::new();
+    dbg!(client.score_log());
     HttpResponse::from(beatoraja_play_recommend::take())
 }
 fn main() {

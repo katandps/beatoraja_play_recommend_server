@@ -388,9 +388,9 @@ checksum = "b41b7ea54a0c9d92199de89e20e58d49f02f8e699814ef3fdf266f6f748d15c7"
 [[package]]
 name = "beatoraja_play_recommend"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#cc4b5a54d862217e2490a63a951521dcb1a9265d"
 dependencies = [
  "controller",
+ "model",
 ]
 
 [[package]]
@@ -401,6 +401,7 @@ dependencies = [
  "actix-web",
  "beatoraja_play_recommend",
  "env_logger",
+ "mysql",
  "serde",
 ]
 
@@ -520,7 +521,6 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#cc4b5a54d862217e2490a63a951521dcb1a9265d"
 dependencies = [
  "lazy_static",
  "serde",
@@ -531,7 +531,6 @@ dependencies = [
 [[package]]
 name = "controller"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#cc4b5a54d862217e2490a63a951521dcb1a9265d"
 dependencies = [
  "config",
  "model",
@@ -644,6 +643,9 @@ dependencies = [
  "byteorder",
  "diesel_derives",
  "libsqlite3-sys",
+ "mysqlclient-sys",
+ "percent-encoding",
+ "url",
 ]
 
 [[package]]
@@ -653,7 +655,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22006237aee4465b49fb3a0248310a0aaefa6f165fc63c5f6e67810c63521c31"
 dependencies = [
  "diesel 0.16.0",
- "dotenv",
+ "dotenv 0.10.1",
  "quote 0.3.15",
  "serde",
  "serde_json",
@@ -685,6 +687,15 @@ name = "discard"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
+
+[[package]]
+name = "dotenv"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "400b347fe65ccfbd8f545c9d9a75d04b0caf23fec49aaa838a9a05398f94c019"
+dependencies = [
+ "regex 0.2.11",
+]
 
 [[package]]
 name = "dotenv"
@@ -1377,15 +1388,34 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#cc4b5a54d862217e2490a63a951521dcb1a9265d"
 dependencies = [
  "anyhow",
  "chrono",
  "config",
- "dotenv",
+ "dotenv 0.10.1",
  "itertools",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "mysql"
+version = "0.1.0"
+dependencies = [
+ "beatoraja_play_recommend",
+ "diesel 1.4.4",
+ "dotenv 0.9.0",
+ "serde_json",
+]
+
+[[package]]
+name = "mysqlclient-sys"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e9637d93448044078aaafea7419aed69d301b4a12bcc4aa0ae856eb169bef85"
+dependencies = [
+ "pkg-config",
+ "vcpkg",
 ]
 
 [[package]]
@@ -2033,7 +2063,6 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 [[package]]
 name = "send_slack"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#cc4b5a54d862217e2490a63a951521dcb1a9265d"
 dependencies = [
  "anyhow",
  "config",
@@ -2045,18 +2074,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.106"
+version = "1.0.110"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36df6ac6412072f67cf767ebbde4133a5b2e88e76dc6187fa7104cd16f783399"
+checksum = "99e7b308464d16b56eba9964e4972a3eee817760ab60d88c3f86e1fecb08204c"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.106"
+version = "1.0.110"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e549e3abf4fb8621bd1609f11dfc9f5e50320802273b12f3811a67e6716ea6c"
+checksum = "818fbf6bfa9a42d3bfcaca148547aa00c7b915bec71d1757aa2d44ca68771984"
 dependencies = [
  "proc-macro2",
  "quote 1.0.4",
@@ -2065,9 +2094,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.52"
+version = "1.0.53"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7894c8ed05b7a3a279aeb79025fdec1d3158080b75b98a08faf2806bb799edd"
+checksum = "993948e75b189211a9b31a7528f950c6adc21f9720b6438ff80a7fa2f864cea2"
 dependencies = [
  "itoa",
  "ryu",
@@ -2166,7 +2195,6 @@ dependencies = [
 [[package]]
 name = "sqlite"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#cc4b5a54d862217e2490a63a951521dcb1a9265d"
 dependencies = [
  "anyhow",
  "config",
@@ -2316,7 +2344,6 @@ dependencies = [
 [[package]]
 name = "table"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#cc4b5a54d862217e2490a63a951521dcb1a9265d"
 dependencies = [
  "anyhow",
  "config",
