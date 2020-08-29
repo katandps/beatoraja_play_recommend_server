@@ -7,7 +7,7 @@ RUN apt-get update -y \
   && apt-get upgrade -y \
   && apt-get install -y mysql-client \
   && apt-get install -y sqlite3 \
-  && apt-get install -y libmysqlclient-dev \
+  && apt-get install -y libmysqlclient-dev
 
 COPY ./target/release/beatoraja_play_recommend_server /app
 EXPOSE 80

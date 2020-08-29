@@ -8,3 +8,5 @@ RUN apt-get update -y \
   && apt upgrade openssl -y \
   && apt-get install -y sqlite3 \
   && apt-get install -y libmysqlclient-dev
+
+EXPOSE 80
