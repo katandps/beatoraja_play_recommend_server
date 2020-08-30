@@ -9,6 +9,8 @@ type Result<T> = std::result::Result<T, warp::Rejection>;
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
+
     let tables = get_tables().await;
 
     let health_route = warp::path!("health").and_then(handler::health);
