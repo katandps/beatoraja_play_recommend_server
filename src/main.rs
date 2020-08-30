@@ -40,10 +40,22 @@ async fn main() {
             .or(ranks_route)
     };
 
+    let recommend_route = {
+        let recommend = warp::path("recommend")
+            .and(warp::get())
+            .and(with_table(tables.clone()));
+        let recommends_route = recommend.clone().and_then(handler::recommends);
+        recommend
+            .and(warp::path::param())
+            .and_then(handler::recommend)
+            .or(recommends_route)
+    };
+
     let routes = health_route
         .or(tables_route)
         .or(lamp_route)
         .or(rank_route)
+        .or(recommend_route)
         .with(warp::cors().allow_any_origin())
         .recover(error::handle_rejection);
 

@@ -17,11 +17,7 @@ pub async fn tables(tables: Tables) -> Result<impl Reply> {
 }
 
 pub async fn lamp(tables: Tables, table_index: usize) -> Result<impl Reply> {
-    Ok(warp::reply::html(graph(
-        tables,
-        table_index,
-        Command::LampGraph,
-    )))
+    Ok(graph(tables, table_index, Command::LampGraph))
 }
 
 pub async fn lamps(tables: Tables) -> Result<impl Reply> {
@@ -29,15 +25,19 @@ pub async fn lamps(tables: Tables) -> Result<impl Reply> {
 }
 
 pub async fn rank(tables: Tables, table_index: usize) -> Result<impl Reply> {
-    Ok(warp::reply::html(graph(
-        tables,
-        table_index,
-        Command::RankGraph,
-    )))
+    Ok(graph(tables, table_index, Command::RankGraph))
 }
 
 pub async fn ranks(tables: Tables) -> Result<impl Reply> {
     Ok(graphs(tables, Command::RankGraph))
+}
+
+pub async fn recommend(tables: Tables, table_index: usize) -> Result<impl Reply> {
+    Ok(graph(tables, table_index, Command::Recommend))
+}
+
+pub async fn recommends(tables: Tables) -> Result<impl Reply> {
+    Ok(graphs(tables, Command::Recommend))
 }
 
 fn graph(tables: Tables, table_index: usize, command: Command) -> String {
@@ -54,9 +54,12 @@ fn graphs(tables: Tables, command: Command) -> String {
     let repos = SqliteClient::new();
     let song_data = repos.song_data();
     let score_log = repos.score_log();
-    format!("[ {} ]", tables
-        .iter()
-        .map(|t| take(t.clone(), song_data.clone(), score_log.clone(), command))
-        .collect::<Vec<String>>()
-        .join(","))
+    format!(
+        "[ {} ]",
+        tables
+            .iter()
+            .map(|t| take(t.clone(), song_data.clone(), score_log.clone(), command))
+            .collect::<Vec<String>>()
+            .join(",")
+    )
 }
