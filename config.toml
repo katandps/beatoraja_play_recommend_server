@@ -6,10 +6,10 @@ songdata_db_url="./files/songdata.db"
 output_type="TEXT"
 
 table_urls=[
-"https://stellabms.xyz/st/table.html",
-"https://stellabms.xyz/sl/table.html",
 "http://www.ribbit.xyz/bms/tables/insane.html",
 "http://www.ribbit.xyz/bms/tables/overjoy.html",
+"https://stellabms.xyz/st/table.html",
+"https://stellabms.xyz/sl/table.html",
 "http://flowermaster.web.fc2.com/lrnanido/gla/LN.html",
 "http://rattoto10.jounin.jp/table_insane.html",
 "http://rattoto10.jounin.jp/table.html",
