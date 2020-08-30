@@ -13,17 +13,37 @@ async fn main() {
 
     let health_route = warp::path!("health").and_then(handler::health);
 
-    let lamp = warp::path("lamp")
+    let tables_route = warp::path("tables")
         .and(warp::get())
-        .and(with_table(tables.clone()));
-    let table_list = lamp.clone().and_then(handler::tables);
-    let lamp = lamp
-        .and(warp::path::param())
-        .and_then(handler::lamp)
-        .or(table_list);
+        .and(with_table(tables.clone()))
+        .and_then(handler::tables);
+
+    let lamp_route = {
+        let lamp = warp::path("lamp")
+            .and(warp::get())
+            .and(with_table(tables.clone()));
+        let lamps_route = lamp.clone().and_then(handler::lamps);
+
+        lamp.and(warp::path::param())
+            .and_then(handler::lamp)
+            .or(lamps_route)
+    };
+
+    let rank_route = {
+        let rank = warp::path("rank")
+            .and(warp::get())
+            .and(with_table(tables.clone()));
+        let ranks_route = rank.clone().and_then(handler::ranks);
+
+        rank.and(warp::path::param())
+            .and_then(handler::rank)
+            .or(ranks_route)
+    };
 
     let routes = health_route
-        .or(lamp)
+        .or(tables_route)
+        .or(lamp_route)
+        .or(rank_route)
         .with(warp::cors().allow_any_origin())
         .recover(error::handle_rejection);
 
