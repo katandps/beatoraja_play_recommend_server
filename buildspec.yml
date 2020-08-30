@@ -14,9 +14,9 @@ phases:
   build:
     commands:
       - cargo build --release
-      - docker build ./ -t $TARGET_IMAGE_NAME:$CODEBUILD_SOURCE_VERSION
+      - docker build ./ -t $TARGET_IMAGE_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - docker build ./ -t $TARGET_IMAGE_NAME:latest
   post_build:
     commands:
-      - docker push $TARGET_IMAGE_NAME:$CODEBUILD_SOURCE_VERSION
+      - docker push $TARGET_IMAGE_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - docker push $TARGET_IMAGE_NAME:latest
