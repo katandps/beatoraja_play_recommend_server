@@ -3,12 +3,14 @@ mod handler;
 
 use beatoraja_play_recommend::*;
 use std::convert::Infallible;
+use std::env;
 use warp::Filter;
 
 type Result<T> = std::result::Result<T, warp::Rejection>;
 
 #[tokio::main]
 async fn main() {
+    env::set_var("RUST_LOG", "debug");
     env_logger::init();
 
     let tables = get_tables().await;
