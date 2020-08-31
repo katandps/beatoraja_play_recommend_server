@@ -10,7 +10,7 @@ type Result<T> = std::result::Result<T, warp::Rejection>;
 
 #[tokio::main]
 async fn main() {
-    env::set_var("RUST_LOG", "debug");
+    env::set_var("RUST_LOG", "info");
     env_logger::init();
 
     let tables = get_tables().await;
