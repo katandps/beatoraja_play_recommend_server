@@ -55,11 +55,18 @@ async fn main() {
             .or(recommends_route)
     };
 
+    let detail_route = warp::path("detail")
+        .and(warp::get())
+        .and(with_table(tables.clone()))
+        .and(warp::path::param())
+        .and_then(handler::detail);
+
     let routes = health_route
         .or(tables_route)
         .or(lamp_route)
         .or(rank_route)
         .or(recommend_route)
+        .or(detail_route)
         .with(warp::cors().allow_any_origin())
         .recover(error::handle_rejection);
 
