@@ -8,6 +8,11 @@ use warp::Filter;
 
 type Result<T> = std::result::Result<T, warp::Rejection>;
 
+const TLS_CERT_PATH: &str = "TLS_CERT_PATH";
+const TLS_CERT_PATH_DEFAULT: &str = "./files/cert.pem";
+const TLS_KEY_PATH: &str = "TLS_KEY_PATH";
+const TLS_KEY_PATH_DEFAULT: &str = "./files/key.rsa";
+
 #[tokio::main]
 async fn main() {
     env::set_var("RUST_LOG", "info");
@@ -70,7 +75,19 @@ async fn main() {
         .with(warp::cors().allow_any_origin())
         .recover(error::handle_rejection);
 
-    warp::serve(routes).run(([0, 0, 0, 0], 8000)).await;
+    warp::serve(routes)
+        .tls()
+        .cert_path(get_env(TLS_CERT_PATH, TLS_CERT_PATH_DEFAULT))
+        .key_path(get_env(TLS_KEY_PATH, TLS_KEY_PATH_DEFAULT))
+        .run(([0, 0, 0, 0], 8000))
+        .await;
+}
+
+fn get_env(key: &str, default: &str) -> String {
+    match env::var(key) {
+        Ok(val) => val,
+        Err(_) => default.into(),
+    }
 }
 
 fn with_table(tables: Tables) -> impl Filter<Extract = (Tables,), Error = Infallible> + Clone {

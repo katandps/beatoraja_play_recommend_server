@@ -71,6 +71,15 @@ dependencies = [
 
 [[package]]
 name = "base64"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b25d992356d2eb0ed82172f5248873db5560c4721f564b13cb5193bda5e668e"
+dependencies = [
+ "byteorder",
+]
+
+[[package]]
+name = "base64"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b41b7ea54a0c9d92199de89e20e58d49f02f8e699814ef3fdf266f6f748d15c7"
@@ -84,7 +93,7 @@ checksum = "53d1ccbaf7d9ec9537465a97bf19edc1a4e158ecb49fc16178202238c569cc42"
 [[package]]
 name = "beatoraja_play_recommend"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#f8877b19d8629e47dd990b885b4ea3be0107e66d"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=1c81c0c6#1c81c0c6b732797bbe7cacf737baed8316759da7"
 dependencies = [
  "controller",
  "model",
@@ -204,7 +213,7 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#f8877b19d8629e47dd990b885b4ea3be0107e66d"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=1c81c0c6#1c81c0c6b732797bbe7cacf737baed8316759da7"
 dependencies = [
  "lazy_static",
  "serde",
@@ -215,7 +224,7 @@ dependencies = [
 [[package]]
 name = "controller"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#f8877b19d8629e47dd990b885b4ea3be0107e66d"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=1c81c0c6#1c81c0c6b732797bbe7cacf737baed8316759da7"
 dependencies = [
  "config",
  "model",
@@ -959,7 +968,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#f8877b19d8629e47dd990b885b4ea3be0107e66d"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=1c81c0c6#1c81c0c6b732797bbe7cacf737baed8316759da7"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1057,6 +1066,12 @@ dependencies = [
  "hermit-abi",
  "libc",
 ]
+
+[[package]]
+name = "once_cell"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "260e51e7efe62b592207e9e13a68e43692a7a279171d6ba57abd208bf23645ad"
 
 [[package]]
 name = "opaque-debug"
@@ -1488,10 +1503,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "ring"
+version = "0.16.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "952cd6b98c85bbc30efa1ba5783b8abf12fec8b3287ffa52605b9432313e34e4"
+dependencies = [
+ "cc",
+ "libc",
+ "once_cell",
+ "spin",
+ "untrusted",
+ "web-sys",
+ "winapi 0.3.8",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c691c0e608126e00913e33f0ccf3727d5fc84573623b8d65b2df340b5201783"
+
+[[package]]
+name = "rustls"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b25a18b1bf7387f0145e7f8324e700805aade3842dd3db2e74e4cdeb4677c09e"
+dependencies = [
+ "base64 0.10.1",
+ "log 0.4.8",
+ "ring",
+ "sct",
+ "webpki",
+]
 
 [[package]]
 name = "ryu"
@@ -1535,6 +1578,16 @@ dependencies = [
  "selectors",
  "smallvec 0.6.13",
  "tendril",
+]
+
+[[package]]
+name = "sct"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3042af939fca8c3453b7af0f1c66e533a15a86169e39de2657310ade8f98d3c"
+dependencies = [
+ "ring",
+ "untrusted",
 ]
 
 [[package]]
@@ -1582,7 +1635,7 @@ dependencies = [
 [[package]]
 name = "send_slack"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#f8877b19d8629e47dd990b885b4ea3be0107e66d"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=1c81c0c6#1c81c0c6b732797bbe7cacf737baed8316759da7"
 dependencies = [
  "anyhow",
  "config",
@@ -1685,9 +1738,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7cb5678e1615754284ec264d9bb5b4c27d2018577fd90ac0ceb578591ed5ee4"
 
 [[package]]
+name = "spin"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
 name = "sqlite"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#f8877b19d8629e47dd990b885b4ea3be0107e66d"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=1c81c0c6#1c81c0c6b732797bbe7cacf737baed8316759da7"
 dependencies = [
  "anyhow",
  "config",
@@ -1770,7 +1829,7 @@ dependencies = [
 [[package]]
 name = "table"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git#f8877b19d8629e47dd990b885b4ea3be0107e66d"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=1c81c0c6#1c81c0c6b732797bbe7cacf737baed8316759da7"
 dependencies = [
  "anyhow",
  "config",
@@ -1899,6 +1958,18 @@ dependencies = [
  "proc-macro2",
  "quote 1.0.4",
  "syn 1.0.18",
+]
+
+[[package]]
+name = "tokio-rustls"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3068d891551949b37681724d6b73666787cc63fa8e255c812a41d2513aff9775"
+dependencies = [
+ "futures-core",
+ "rustls",
+ "tokio",
+ "webpki",
 ]
 
 [[package]]
@@ -2054,6 +2125,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 
 [[package]]
+name = "untrusted"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a156c684c91ea7d62626509bce3cb4e1d9ed5c4d978f7b4352658f96a4c26b4a"
+
+[[package]]
 name = "url"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2131,6 +2208,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "tokio",
+ "tokio-rustls",
  "tokio-tungstenite",
  "tower-service",
  "urlencoding",
@@ -2218,6 +2296,16 @@ checksum = "8bc359e5dd3b46cb9687a051d50a2fdd228e4ba7cf6fcf861a5365c3d671a642"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "webpki"
+version = "0.21.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab146130f5f790d45f82aeeb09e55a256573373ec64409fc19a6fb82fb1032ae"
+dependencies = [
+ "ring",
+ "untrusted",
 ]
 
 [[package]]
