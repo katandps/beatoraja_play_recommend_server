@@ -1,5 +1,6 @@
 use crate::Result;
 use beatoraja_play_recommend::*;
+use serde::Serialize;
 use warp::{http::StatusCode, Reply};
 
 pub async fn health() -> Result<impl Reply> {
@@ -7,7 +8,22 @@ pub async fn health() -> Result<impl Reply> {
 }
 
 pub async fn tables(tables: Tables) -> Result<impl Reply> {
-    Ok(serde_json::to_string(&tables.iter().map(|t| t.name()).collect::<Vec<String>>()).unwrap())
+    Ok(serde_json::to_string(
+        &tables
+            .iter()
+            .map(|t| TableFormat {
+                name: t.name(),
+                levels: t.levels().clone(),
+            })
+            .collect::<Vec<_>>(),
+    )
+    .unwrap())
+}
+
+#[derive(Serialize)]
+struct TableFormat {
+    name: String,
+    levels: Levels,
 }
 
 pub async fn lamp(tables: Tables, table_index: usize) -> Result<impl Reply> {
