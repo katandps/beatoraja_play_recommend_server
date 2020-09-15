@@ -7,13 +7,7 @@ pub async fn health() -> Result<impl Reply> {
 }
 
 pub async fn tables(tables: Tables) -> Result<impl Reply> {
-    let res: String = tables
-        .iter()
-        .zip(0..tables.len())
-        .map(|(t, index)| format!("{}: {}", index, t.name()))
-        .collect::<Vec<String>>()
-        .join("<br />");
-    Ok(warp::reply::html(res))
+    Ok(serde_json::to_string(&tables.iter().map(|t| t.name()).collect::<Vec<String>>()).unwrap())
 }
 
 pub async fn lamp(tables: Tables, table_index: usize) -> Result<impl Reply> {
