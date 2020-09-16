@@ -13,7 +13,12 @@ pub async fn tables(tables: Tables) -> Result<impl Reply> {
             .iter()
             .map(|t| TableFormat {
                 name: t.name(),
-                levels: t.levels().clone(),
+                levels: t
+                    .levels()
+                    .iter()
+                    .cloned()
+                    .map(|l| format!("{}{}", t.symbol(), l.to_string()))
+                    .collect::<Vec<_>>(),
             })
             .collect::<Vec<_>>(),
     )
@@ -23,7 +28,7 @@ pub async fn tables(tables: Tables) -> Result<impl Reply> {
 #[derive(Serialize)]
 struct TableFormat {
     name: String,
-    levels: Levels,
+    levels: Vec<String>,
 }
 
 pub async fn lamp(tables: Tables, table_index: usize) -> Result<impl Reply> {
