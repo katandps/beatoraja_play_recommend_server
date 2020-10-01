@@ -60,11 +60,16 @@ async fn main() {
             .or(recommends_route)
     };
 
-    let detail_route = warp::path("detail")
-        .and(warp::get())
-        .and(with_table(tables.clone()))
-        .and(warp::path::param())
-        .and_then(handler::detail);
+    let detail_route = {
+        let detail = warp::path("detail")
+            .and(warp::get())
+            .and(with_table(tables.clone()));
+        let details_route = detail.clone().and_then(handler::details);
+        detail
+            .and(warp::path::param())
+            .and_then(handler::detail)
+            .or(details_route)
+    };
 
     let routes = health_route
         .or(tables_route)

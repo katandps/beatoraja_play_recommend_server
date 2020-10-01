@@ -59,6 +59,10 @@ pub async fn detail(tables: Tables, table_index: usize) -> Result<impl Reply> {
     Ok(graph(tables, table_index, Command::Detail))
 }
 
+pub async fn details(tables: Tables) -> Result<impl Reply> {
+    Ok(graphs(tables, Command::Detail))
+}
+
 fn graph(tables: Tables, table_index: usize, command: Command) -> String {
     let repos = SqliteClient::new();
     let table = match tables.get(table_index) {
