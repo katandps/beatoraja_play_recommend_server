@@ -70,7 +70,13 @@ fn graph(tables: Tables, table_index: usize, command: Command) -> String {
         None => tables.iter().next().unwrap(),
     }
     .clone();
-    take(table, repos.song_data(), repos.score_log(), command)
+    take(
+        table,
+        repos.song_data(),
+        repos.score(),
+        repos.score_log(),
+        command,
+    )
 }
 
 fn graphs(tables: Tables, command: Command) -> String {
@@ -81,7 +87,13 @@ fn graphs(tables: Tables, command: Command) -> String {
         "[ {} ]",
         tables
             .iter()
-            .map(|t| take(t.clone(), song_data.clone(), score_log.clone(), command))
+            .map(|t| take(
+                t.clone(),
+                song_data.clone(),
+                repos.score(),
+                score_log.clone(),
+                command
+            ))
             .collect::<Vec<String>>()
             .join(",")
     )
