@@ -1,8 +1,8 @@
 version: 0.0
 os: linux
 files:
-- source: /
-destination: /opt
+  - source: run.sh
+    destination: /apps/run.sh
 hooks:
-ApplicationStart:
-- location: run.sh
+  ApplicationStart:
+    - location: run.sh
