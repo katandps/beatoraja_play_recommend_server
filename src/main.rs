@@ -60,11 +60,16 @@ async fn main() {
             .or(details_route)
     };
 
+    let history_route = warp::path("history")
+        .and(warp::get())
+        .and_then(handler::history);
+
     let routes = health_route
         .or(tables_route)
         .or(lamp_route)
         .or(rank_route)
         .or(detail_route)
+        .or(history_route)
         .with(warp::cors().allow_any_origin())
         .recover(error::handle_rejection);
 

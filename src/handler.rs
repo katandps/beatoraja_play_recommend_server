@@ -77,3 +77,8 @@ fn graphs(tables: Tables, command: Command) -> String {
             .join(",")
     )
 }
+
+pub async fn history() -> Result<impl Reply> {
+    let repos = SqliteClient::new();
+    Ok(serde_json::to_string(&repos.player().diff()).unwrap())
+}
