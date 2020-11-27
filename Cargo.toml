@@ -16,6 +16,8 @@ serde_derive = "1.0"
 serde_json = "1.0"
 thiserror = "1.0"
 
-beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "6672b6bb"}
+chrono = "0.4.19"
+
+beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "d987c801"}
 #開発用
 #beatoraja_play_recommend = { path = "../beatoraja_play_recommend" }

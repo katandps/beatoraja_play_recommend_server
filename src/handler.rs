@@ -29,30 +29,24 @@ fn health_route() -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 
-fn graphs_route(tables: Tables, name: String, t: Command) -> BoxedFilter<(impl Reply,)> {
+fn graphs_route(tables: Tables, name: String, command: Command) -> BoxedFilter<(impl Reply,)> {
     warp::get()
         .and(warp::path(name))
         .and(warp::path::end())
         .and(with_table(tables))
         .and(warp::query::<HashMap<String, String>>())
-        .map(move |tables, query| {
-            dbg!(query);
-            Ok(graphs(tables, t))
-        })
+        .map(move |tables, query| Ok(graphs(tables, command, date(&query))))
         .boxed()
 }
 
-fn graph_route(tables: Tables, name: String, t: Command) -> BoxedFilter<(impl Reply,)> {
+fn graph_route(tables: Tables, name: String, command: Command) -> BoxedFilter<(impl Reply,)> {
     warp::get()
         .and(warp::path(name))
         .and(warp::path::param())
         .and(warp::path::end())
         .and(with_table(tables))
         .and(warp::query::<HashMap<String, String>>())
-        .map(move |index, tables, query| {
-            dbg!(index, &query);
-            Ok(graph(tables, index, t))
-        })
+        .map(move |index, tables, query| Ok(graph(tables, index, command, date(&query))))
         .boxed()
 }
 
@@ -97,24 +91,30 @@ struct TableFormat {
     levels: Vec<String>,
 }
 
-fn graph(tables: Tables, table_index: usize, command: Command) -> String {
+fn graph(tables: Tables, table_index: usize, command: Command, date: UpdatedAt) -> String {
     let repos = SqliteClient::new();
     let table = match tables.get(table_index) {
         Some(t) => t,
         None => tables.iter().next().unwrap(),
     }
     .clone();
-    take(table, repos.song_data(), repos.score(), command)
+    take(table, repos.song_data(), repos.score(), command, date)
 }
 
-fn graphs(tables: Tables, command: Command) -> String {
+fn graphs(tables: Tables, command: Command, date: UpdatedAt) -> String {
     let repos = SqliteClient::new();
     let song_data = repos.song_data();
     format!(
         "[ {} ]",
         tables
             .iter()
-            .map(|t| take(t.clone(), song_data.clone(), repos.score(), command))
+            .map(|t| take(
+                t.clone(),
+                song_data.clone(),
+                repos.score(),
+                command,
+                date.clone()
+            ))
             .collect::<Vec<String>>()
             .join(",")
     )
@@ -122,4 +122,12 @@ fn graphs(tables: Tables, command: Command) -> String {
 
 fn with_table(tables: Tables) -> impl Filter<Extract = (Tables,), Error = Infallible> + Clone {
     warp::any().map(move || tables.clone())
+}
+
+fn date(map: &HashMap<String, String>) -> UpdatedAt {
+    if let Some(date) = map.get("date".into()) {
+        UpdatedAt::from_str(date)
+    } else {
+        UpdatedAt::new()
+    }
 }
