@@ -1,58 +1,100 @@
-use crate::Result;
+use crate::error;
 use beatoraja_play_recommend::*;
 use serde::Serialize;
-use warp::{http::StatusCode, Reply};
+use std::collections::HashMap;
+use std::convert::Infallible;
+use warp::http::StatusCode;
+use warp::{filters::BoxedFilter, Filter, Reply};
 
-pub async fn health() -> Result<impl Reply> {
-    Ok(StatusCode::OK)
+pub async fn routes() -> BoxedFilter<(impl Reply,)> {
+    let t = get_tables().await;
+
+    health_route()
+        .or(graphs_route(t.clone(), "lamp".into(), Command::LampGraph))
+        .or(graphs_route(t.clone(), "rank".into(), Command::RankGraph))
+        .or(graphs_route(t.clone(), "detail".into(), Command::Detail))
+        .or(graph_route(t.clone(), "lamp".into(), Command::LampGraph))
+        .or(graph_route(t.clone(), "rank".into(), Command::RankGraph))
+        .or(graph_route(t.clone(), "detail".into(), Command::Detail))
+        .or(tables_route(t.clone()))
+        .or(history_route())
+        .with(warp::cors().allow_any_origin())
+        .recover(error::handle_rejection)
+        .boxed()
 }
 
-pub async fn tables(tables: Tables) -> Result<impl Reply> {
-    Ok(serde_json::to_string(
-        &tables
-            .iter()
-            .map(|t| TableFormat {
-                name: t.name(),
-                levels: t
-                    .levels()
+fn health_route() -> BoxedFilter<(impl Reply,)> {
+    warp::path("health")
+        .map(|| warp::reply::with_status(warp::reply::json(&[123]), StatusCode::OK))
+        .boxed()
+}
+
+fn graphs_route(tables: Tables, name: String, t: Command) -> BoxedFilter<(impl Reply,)> {
+    warp::get()
+        .and(warp::path(name))
+        .and(warp::path::end())
+        .and(with_table(tables))
+        .and(warp::query::<HashMap<String, String>>())
+        .map(move |tables, query| {
+            dbg!(query);
+            Ok(graphs(tables, t))
+        })
+        .boxed()
+}
+
+fn graph_route(tables: Tables, name: String, t: Command) -> BoxedFilter<(impl Reply,)> {
+    warp::get()
+        .and(warp::path(name))
+        .and(warp::path::param())
+        .and(warp::path::end())
+        .and(with_table(tables))
+        .and(warp::query::<HashMap<String, String>>())
+        .map(move |index, tables, query| {
+            dbg!(index, &query);
+            Ok(graph(tables, index, t))
+        })
+        .boxed()
+}
+
+fn tables_route(tables: Tables) -> BoxedFilter<(impl Reply,)> {
+    warp::get()
+        .and(warp::path("tables"))
+        .and(with_table(tables))
+        .and(warp::path::end())
+        .map(|tables: Tables| {
+            Ok(serde_json::to_string(
+                &tables
                     .iter()
-                    .cloned()
-                    .map(|l| format!("{}{}", t.symbol(), l.to_string()))
+                    .map(|t| TableFormat {
+                        name: t.name(),
+                        levels: t
+                            .levels()
+                            .iter()
+                            .cloned()
+                            .map(|l| format!("{}{}", t.symbol(), l.to_string()))
+                            .collect::<Vec<_>>(),
+                    })
                     .collect::<Vec<_>>(),
-            })
-            .collect::<Vec<_>>(),
-    )
-    .unwrap())
+            )
+            .unwrap())
+        })
+        .boxed()
+}
+
+fn history_route() -> BoxedFilter<(impl Reply,)> {
+    warp::get()
+        .and(warp::path("history"))
+        .map(|| {
+            let repos = SqliteClient::new();
+            Ok(serde_json::to_string(&repos.player().diff()).unwrap())
+        })
+        .boxed()
 }
 
 #[derive(Serialize)]
 struct TableFormat {
     name: String,
     levels: Vec<String>,
-}
-
-pub async fn lamp(tables: Tables, table_index: usize) -> Result<impl Reply> {
-    Ok(graph(tables, table_index, Command::LampGraph))
-}
-
-pub async fn lamps(tables: Tables) -> Result<impl Reply> {
-    Ok(graphs(tables, Command::LampGraph))
-}
-
-pub async fn rank(tables: Tables, table_index: usize) -> Result<impl Reply> {
-    Ok(graph(tables, table_index, Command::RankGraph))
-}
-
-pub async fn ranks(tables: Tables) -> Result<impl Reply> {
-    Ok(graphs(tables, Command::RankGraph))
-}
-
-pub async fn detail(tables: Tables, table_index: usize) -> Result<impl Reply> {
-    Ok(graph(tables, table_index, Command::Detail))
-}
-
-pub async fn details(tables: Tables) -> Result<impl Reply> {
-    Ok(graphs(tables, Command::Detail))
 }
 
 fn graph(tables: Tables, table_index: usize, command: Command) -> String {
@@ -78,7 +120,6 @@ fn graphs(tables: Tables, command: Command) -> String {
     )
 }
 
-pub async fn history() -> Result<impl Reply> {
-    let repos = SqliteClient::new();
-    Ok(serde_json::to_string(&repos.player().diff()).unwrap())
+fn with_table(tables: Tables) -> impl Filter<Extract = (Tables,), Error = Infallible> + Clone {
+    warp::any().map(move || tables.clone())
 }
