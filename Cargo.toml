@@ -18,6 +18,6 @@ thiserror = "1.0"
 
 chrono = "0.4.19"
 
-beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "5950fab4"}
+beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "b0a7f457"}
 #開発用
 #beatoraja_play_recommend = { path = "../beatoraja_play_recommend" }
