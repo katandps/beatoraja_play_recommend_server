@@ -93,7 +93,7 @@ checksum = "53d1ccbaf7d9ec9537465a97bf19edc1a4e158ecb49fc16178202238c569cc42"
 [[package]]
 name = "beatoraja_play_recommend"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=7e0e1969#7e0e196961e021af47cd6824f02ff93eb23bbbfe"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=43e12bf6#43e12bf62ccb2534e9c383a7902a08f66a13f055"
 dependencies = [
  "controller",
  "model",
@@ -216,7 +216,7 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=7e0e1969#7e0e196961e021af47cd6824f02ff93eb23bbbfe"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=43e12bf6#43e12bf62ccb2534e9c383a7902a08f66a13f055"
 dependencies = [
  "lazy_static",
  "serde",
@@ -227,7 +227,7 @@ dependencies = [
 [[package]]
 name = "controller"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=7e0e1969#7e0e196961e021af47cd6824f02ff93eb23bbbfe"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=43e12bf6#43e12bf62ccb2534e9c383a7902a08f66a13f055"
 dependencies = [
  "config",
  "model",
@@ -971,7 +971,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=7e0e1969#7e0e196961e021af47cd6824f02ff93eb23bbbfe"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=43e12bf6#43e12bf62ccb2534e9c383a7902a08f66a13f055"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1638,7 +1638,7 @@ dependencies = [
 [[package]]
 name = "send_slack"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=7e0e1969#7e0e196961e021af47cd6824f02ff93eb23bbbfe"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=43e12bf6#43e12bf62ccb2534e9c383a7902a08f66a13f055"
 dependencies = [
  "anyhow",
  "config",
@@ -1749,7 +1749,7 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 [[package]]
 name = "sqlite"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=7e0e1969#7e0e196961e021af47cd6824f02ff93eb23bbbfe"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=43e12bf6#43e12bf62ccb2534e9c383a7902a08f66a13f055"
 dependencies = [
  "anyhow",
  "config",
@@ -1832,7 +1832,7 @@ dependencies = [
 [[package]]
 name = "table"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=7e0e1969#7e0e196961e021af47cd6824f02ff93eb23bbbfe"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=43e12bf6#43e12bf62ccb2534e9c383a7902a08f66a13f055"
 dependencies = [
  "anyhow",
  "config",
