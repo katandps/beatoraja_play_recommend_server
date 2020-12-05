@@ -21,3 +21,7 @@ phases:
     commands:
       - docker push $TARGET_IMAGE_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - docker push $TARGET_IMAGE_NAME:latest
+
+cache:
+  path:
+    - $HOME/.cargo/**/*
