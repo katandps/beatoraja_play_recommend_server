@@ -126,7 +126,7 @@ fn with_table(tables: Tables) -> impl Filter<Extract = (Tables,), Error = Infall
 
 fn date(map: &HashMap<String, String>) -> UpdatedAt {
     if let Some(date) = map.get("date".into()) {
-        UpdatedAt::from_str(date)
+        UpdatedAt::from_str(date).sub(-1)
     } else {
         UpdatedAt::new()
     }
