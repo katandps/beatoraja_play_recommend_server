@@ -6,6 +6,6 @@ rm -f files/*.db
 aws s3 sync s3://beatoraja-play-recommend files/
 
 $(aws ecr get-login --no-include-email)
-docker-compose up -d
-# container volume imageを掃除する
+docker-compose down
 docker system prune --force
+docker-compose up -d
