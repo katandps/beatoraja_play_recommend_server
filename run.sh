@@ -6,6 +6,6 @@ rm -f files/*.db
 aws s3 sync s3://beatoraja-play-recommend files/
 
 $(aws ecr get-login --no-include-email)
-docker pull $IMAGE
-docker ps | awk '{print $1}' | xargs docker kill
-docker run -itd --restart=always -v $(pwd)/files:/app/files -v $(pwd)/config.toml:/app/config.toml -p 443:8000 $IMAGE
+docker-compose up -d
+# container volume imageを掃除する
+docker system prune --force
