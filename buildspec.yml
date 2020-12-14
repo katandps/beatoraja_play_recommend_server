@@ -1,5 +1,10 @@
 version: 0.2
 
+env:
+  secrets-manager:
+    DOCKERHUB_USER: arn:aws:secretsmanager:ap-northeast-1:847110695266:secret:DockerHub-SaAUAX:username
+    DOCKERHUB_PASS: arn:aws:secretsmanager:ap-northeast-1:847110695266:secret:DockerHub-SaAUAX:password
+
 phases:
   install:
     runtime-versions:
@@ -10,6 +15,9 @@ phases:
       - . $HOME/.cargo/env
   pre_build:
     commands:
+      - echo Logging in to Docker Hub...
+      - echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+      - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
   build:
     commands:
