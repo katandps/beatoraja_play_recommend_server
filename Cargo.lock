@@ -110,7 +110,6 @@ dependencies = [
  "chrono",
  "env_logger",
  "futures",
- "mysql",
  "serde",
  "serde_derive",
  "serde_json",
@@ -320,9 +319,6 @@ dependencies = [
  "byteorder",
  "diesel_derives",
  "libsqlite3-sys",
- "mysqlclient-sys",
- "percent-encoding",
- "url",
 ]
 
 [[package]]
@@ -1043,26 +1039,6 @@ dependencies = [
  "safemem",
  "tempfile",
  "twoway",
-]
-
-[[package]]
-name = "mysql"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "beatoraja_play_recommend",
- "diesel 1.4.4",
- "diesel_codegen",
-]
-
-[[package]]
-name = "mysqlclient-sys"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e9637d93448044078aaafea7419aed69d301b4a12bcc4aa0ae856eb169bef85"
-dependencies = [
- "pkg-config",
- "vcpkg",
 ]
 
 [[package]]
