@@ -1,88 +1,52 @@
-use crate::error;
 use beatoraja_play_recommend::*;
+use diesel::r2d2::ConnectionManager;
+use diesel::{Connection, MysqlConnection};
+use r2d2::Pool;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::convert::Infallible;
 use warp::http::StatusCode;
-use warp::{filters::BoxedFilter, Filter, Reply};
+use warp::{Filter, Rejection, Reply};
 
-pub async fn routes() -> BoxedFilter<(impl Reply,)> {
-    let t = get_tables().await;
-
-    health_route()
-        .or(graphs_route(t.clone(), "lamp".into(), Command::LampGraph))
-        .or(graphs_route(t.clone(), "rank".into(), Command::RankGraph))
-        .or(graphs_route(t.clone(), "detail".into(), Command::Detail))
-        .or(graph_route(t.clone(), "lamp".into(), Command::LampGraph))
-        .or(graph_route(t.clone(), "rank".into(), Command::RankGraph))
-        .or(graph_route(t.clone(), "detail".into(), Command::Detail))
-        .or(tables_route(t.clone()))
-        .or(history_route())
-        .with(warp::cors().allow_any_origin())
-        .recover(error::handle_rejection)
-        .boxed()
+pub fn with_db(
+    db_pool: Pool<ConnectionManager<MysqlConnection>>,
+) -> impl Filter<Extract = (Pool<ConnectionManager<MysqlConnection>>,), Error = Infallible> + Clone
+{
+    warp::any().map(move || db_pool.clone())
 }
 
-fn health_route() -> BoxedFilter<(impl Reply,)> {
-    warp::path("health")
-        .map(|| warp::reply::with_status(warp::reply::json(&[123]), StatusCode::OK))
-        .boxed()
+pub fn with_table(tables: Tables) -> impl Filter<Extract = (Tables,), Error = Infallible> + Clone {
+    warp::any().map(move || tables.clone())
 }
 
-fn graphs_route(tables: Tables, name: String, command: Command) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path(name))
-        .and(warp::path::end())
-        .and(with_table(tables))
-        .and(warp::query::<HashMap<String, String>>())
-        .map(move |tables, query| Ok(graphs(tables, command, date(&query))))
-        .boxed()
+pub async fn health_handler(
+    db_pool: Pool<ConnectionManager<MysqlConnection>>,
+) -> std::result::Result<impl Reply, Rejection> {
+    match db_pool.get() {
+        Ok(db) => match db.execute("SELECT 1") {
+            Ok(_) => Ok(StatusCode::OK),
+            Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+        },
+        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+    }
 }
 
-fn graph_route(tables: Tables, name: String, command: Command) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path(name))
-        .and(warp::path::param())
-        .and(warp::path::end())
-        .and(with_table(tables))
-        .and(warp::query::<HashMap<String, String>>())
-        .map(move |index, tables, query| Ok(graph(tables, index, command, date(&query))))
-        .boxed()
-}
-
-fn tables_route(tables: Tables) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path("tables"))
-        .and(with_table(tables))
-        .and(warp::path::end())
-        .map(|tables: Tables| {
-            Ok(serde_json::to_string(
-                &tables
+pub async fn table_handler(tables: Tables) -> std::result::Result<impl Reply, Rejection> {
+    Ok(serde_json::to_string(
+        &tables
+            .iter()
+            .map(|t| TableFormat {
+                name: t.name(),
+                levels: t
+                    .levels()
                     .iter()
-                    .map(|t| TableFormat {
-                        name: t.name(),
-                        levels: t
-                            .levels()
-                            .iter()
-                            .cloned()
-                            .map(|l| format!("{}{}", t.symbol(), l.to_string()))
-                            .collect::<Vec<_>>(),
-                    })
+                    .cloned()
+                    .map(|l| format!("{}{}", t.symbol(), l.to_string()))
                     .collect::<Vec<_>>(),
-            )
-            .unwrap())
-        })
-        .boxed()
-}
-
-fn history_route() -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path("history"))
-        .map(|| {
-            let repos = SqliteClient::new();
-            Ok(serde_json::to_string(&repos.player().diff()).unwrap())
-        })
-        .boxed()
+            })
+            .collect::<Vec<_>>(),
+    )
+    .unwrap())
 }
 
 #[derive(Serialize)]
@@ -91,37 +55,81 @@ struct TableFormat {
     levels: Vec<String>,
 }
 
-fn graph(tables: Tables, table_index: usize, command: Command, date: UpdatedAt) -> String {
-    let repos = SqliteClient::new();
-    let table = match tables.get(table_index) {
-        Some(t) => t,
-        None => tables.iter().next().unwrap(),
+/// 詳細表示ハンドラ
+/// user_idをQueryParameterより取得する
+/// 未入力の場合は1になる
+pub async fn detail_handler(
+    tables: Tables,
+    query: HashMap<String, String>,
+) -> Result<impl Reply, Rejection> {
+    let repos = MySQLClient::new();
+    let user_id = query.get(&"user_id".to_string()).unwrap_or(&"1".to_string()).clone();
+    let num_user_id = user_id.parse::<i32>();
+    if num_user_id.is_err() {
+        return Ok("{\"message\": \"user_id is invalid\"}".into());
     }
-    .clone();
-    take(table, repos.song_data(), repos.score(), command, date)
-}
-
-fn graphs(tables: Tables, command: Command, date: UpdatedAt) -> String {
-    let repos = SqliteClient::new();
-    let song_data = repos.song_data();
-    format!(
+    let num_user_id = num_user_id.unwrap();
+    let account = repos.account_by_id(num_user_id);
+    if account.is_err() {
+        return Ok("{\"message\": \"account is not found\"}".into());
+    }
+    let account = account.unwrap();
+    Ok(format!(
         "[ {} ]",
         tables
             .iter()
-            .map(|t| take(
+            .map(|t| beatoraja_play_recommend::Controller::for_server(
                 t.clone(),
-                song_data.clone(),
-                repos.score(),
-                command,
-                date.clone()
-            ))
+                repos.song_data(),
+                repos.score(account.clone()).unwrap(),
+                Command::Detail,
+            )
+            .run(date(&query))
+            .to_string())
             .collect::<Vec<String>>()
             .join(",")
-    )
+    ))
 }
 
-fn with_table(tables: Tables) -> impl Filter<Extract = (Tables,), Error = Infallible> + Clone {
-    warp::any().map(move || tables.clone())
+pub async fn my_detail_handler(
+    tables: Tables,
+    query: HashMap<String, String>,
+) -> Result<impl Reply, Rejection> {
+    let repos = MySQLClient::new();
+    let token = query.get("token".into());
+    if token.is_none() {
+        return Ok("{\"message\":\"token is not input\"}".into());
+    }
+    let profile = get_profile(token.unwrap());
+    if profile.is_err() {
+        return Ok("{\"message\":\"token is invalid\"}".into());
+    }
+    let profile = profile.unwrap();
+    let account = repos.account(profile.email);
+    if account.is_err() {
+        return Ok("{\"message\": \"account is not found\"}".into());
+    }
+    let account = account.unwrap();
+    Ok(format!(
+        "[ {} ]",
+        tables
+            .iter()
+            .map(|t| beatoraja_play_recommend::Controller::for_server(
+                t.clone(),
+                repos.song_data(),
+                repos.score(account.clone()).unwrap(),
+                Command::Detail,
+            )
+            .run(date(&query))
+            .to_string())
+            .collect::<Vec<String>>()
+            .join(",")
+    ))
+}
+
+pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
+    let repos = beatoraja_play_recommend::SqliteClient::new();
+    Ok(serde_json::to_string(&repos.player().diff()).unwrap())
 }
 
 fn date(map: &HashMap<String, String>) -> UpdatedAt {
@@ -130,4 +138,26 @@ fn date(map: &HashMap<String, String>) -> UpdatedAt {
     } else {
         UpdatedAt::new()
     }
+}
+
+fn get_profile(token: &String) -> Result<Profile, google_jwt_verify::Error> {
+    let client_id = config().google_oauth_client_id();
+    let client = google_jwt_verify::Client::new(&client_id);
+    let id_token = tokio::task::block_in_place(move || client.verify_id_token(&token))?;
+
+    let user_id = id_token.get_claims().get_subject();
+    let email = id_token.get_payload().get_email();
+    let name = id_token.get_payload().get_name();
+    Ok(Profile {
+        user_id,
+        email,
+        name,
+    })
+}
+
+#[derive(Clone, Debug)]
+struct Profile {
+    user_id: String,
+    email: String,
+    name: String,
 }

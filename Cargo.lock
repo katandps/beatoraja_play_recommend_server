@@ -20,9 +20,20 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.28"
+version = "1.0.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9a60d744a80c30fcb657dfe2c1b22bcb3e814c1a1e3674f32bf5820b570fbff"
+checksum = "68803225a7b13e47191bab76f2687382b60d259e8cf37f6e1893658b84bb9479"
+
+[[package]]
+name = "async-trait"
+version = "0.1.42"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d3a45e77e34375a7923b1e8febb049bb011f064714a8e17a1a616fef01da13d"
+dependencies = [
+ "proc-macro2",
+ "quote 1.0.4",
+ "syn 1.0.54",
+]
 
 [[package]]
 name = "atty"
@@ -93,7 +104,9 @@ checksum = "53d1ccbaf7d9ec9537465a97bf19edc1a4e158ecb49fc16178202238c569cc42"
 [[package]]
 name = "beatoraja_play_recommend"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
+ "anyhow",
  "config",
  "controller",
  "model",
@@ -107,14 +120,17 @@ dependencies = [
 name = "beatoraja_play_recommend_server"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "beatoraja_play_recommend",
  "chrono",
+ "diesel 1.4.5",
  "env_logger",
  "futures",
+ "google-jwt-verify",
+ "r2d2",
  "serde",
  "serde_derive",
  "serde_json",
- "thiserror",
  "tokio",
  "warp",
 ]
@@ -224,6 +240,7 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
  "lazy_static",
  "serde",
@@ -234,6 +251,7 @@ dependencies = [
 [[package]]
 name = "controller"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
  "config",
  "model",
@@ -322,6 +340,7 @@ dependencies = [
  "diesel_derives",
  "libsqlite3-sys",
  "mysqlclient-sys",
+ "r2d2",
  "url 1.7.2",
 ]
 
@@ -621,6 +640,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "google-jwt-verify"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfcea325d08eeb94c22c697c736288f2ddf8aea673b47db2d29eec81a241ed59"
+dependencies = [
+ "async-trait",
+ "base64 0.11.0",
+ "headers",
+ "openssl",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
 name = "h2"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -801,6 +836,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "instant"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61124eeebbd69b8190558df225adf7e4caafce0d743919e5d6b19652314ec5ec"
+dependencies = [
+ "cfg-if 1.0.0",
+]
+
+[[package]]
 name = "iovec"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -863,6 +907,15 @@ checksum = "56d90181c2904c287e5390186be820e5ef311a3c62edebb7d6ca3d6a48ce041d"
 dependencies = [
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "lock_api"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd96ffd135b2fd7b973ac026d28085defbe8983df057ced3eb4f2130b0831312"
+dependencies = [
+ "scopeguard",
 ]
 
 [[package]]
@@ -1028,6 +1081,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1059,6 +1113,7 @@ dependencies = [
 [[package]]
 name = "mysql"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1191,6 +1246,31 @@ dependencies = [
  "libc",
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "parking_lot"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d7744ac029df22dca6284efe4e898991d28e3085c706c972bcd7da4a27a15eb"
+dependencies = [
+ "instant",
+ "lock_api",
+ "parking_lot_core",
+]
+
+[[package]]
+name = "parking_lot_core"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ccb628cad4f84851442432c60ad8e1f607e29752d0bf072cbd0baf28aa34272"
+dependencies = [
+ "cfg-if 1.0.0",
+ "instant",
+ "libc",
+ "redox_syscall",
+ "smallvec 1.4.0",
+ "winapi 0.3.8",
 ]
 
 [[package]]
@@ -1360,6 +1440,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4c1f4b0efa5fc5e8ceb705136bfee52cfdb6a4e3509f770b478cd6ed434232a7"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "r2d2"
+version = "0.8.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "545c5bc2b880973c9c10e4067418407a0ccaa3091781d1671d46eb35107cb26f"
+dependencies = [
+ "log 0.4.8",
+ "parking_lot",
+ "scheduled-thread-pool",
 ]
 
 [[package]]
@@ -1666,10 +1757,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "scheduled-thread-pool"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc6f74fd1204073fa02d5d5d68bec8021be4c38690b61264b2fdb48083d0e7d7"
+dependencies = [
+ "parking_lot",
+]
+
+[[package]]
 name = "scoped-tls"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea6a9290e3c9cf0f18145ef7ffa62d68ee0bf5fcd651017e586dc7fd5da448c2"
+
+[[package]]
+name = "scopeguard"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "scraper"
@@ -1742,6 +1848,7 @@ dependencies = [
 [[package]]
 name = "send_slack"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
  "anyhow",
  "config",
@@ -1873,6 +1980,7 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 [[package]]
 name = "sqlite"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
  "anyhow",
  "config",
@@ -1955,6 +2063,7 @@ dependencies = [
 [[package]]
 name = "table"
 version = "0.1.0"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=75148853#751488535c2cc5f4c3697b9f27bce68944e3df70"
 dependencies = [
  "anyhow",
  "config",
@@ -2006,26 +2115,6 @@ name = "thin-slice"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8eaa81235c7058867fa8c0e7314f33dcce9c215f535d1913822a2b3f5e289f3c"
-
-[[package]]
-name = "thiserror"
-version = "1.0.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dfdd070ccd8ccb78f4ad66bf1982dc37f620ef696c6b5028fe2ed83dd3d0d08"
-dependencies = [
- "thiserror-impl",
-]
-
-[[package]]
-name = "thiserror-impl"
-version = "1.0.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd80fc12f73063ac132ac92aceea36734f04a1d93c1240c6944e23a3b8841793"
-dependencies = [
- "proc-macro2",
- "quote 1.0.4",
- "syn 1.0.54",
-]
 
 [[package]]
 name = "thread_local"
