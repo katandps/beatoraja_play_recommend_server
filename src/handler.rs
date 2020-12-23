@@ -2,7 +2,6 @@ use beatoraja_play_recommend::*;
 use diesel::r2d2::ConnectionManager;
 use diesel::{Connection, MysqlConnection};
 use r2d2::Pool;
-use serde::Serialize;
 use std::collections::HashMap;
 use std::convert::Infallible;
 use warp::http::StatusCode;
@@ -32,27 +31,7 @@ pub async fn health_handler(
 }
 
 pub async fn table_handler(tables: Tables) -> std::result::Result<impl Reply, Rejection> {
-    Ok(serde_json::to_string(
-        &tables
-            .iter()
-            .map(|t| TableFormat {
-                name: t.name(),
-                levels: t
-                    .levels()
-                    .iter()
-                    .cloned()
-                    .map(|l| format!("{}{}", t.symbol(), l.to_string()))
-                    .collect::<Vec<_>>(),
-            })
-            .collect::<Vec<_>>(),
-    )
-    .unwrap())
-}
-
-#[derive(Serialize)]
-struct TableFormat {
-    name: String,
-    levels: Vec<String>,
+    Ok(serde_json::to_string(&tables.format()).unwrap())
 }
 
 /// 詳細表示ハンドラ
@@ -63,7 +42,10 @@ pub async fn detail_handler(
     query: HashMap<String, String>,
 ) -> Result<impl Reply, Rejection> {
     let repos = MySQLClient::new();
-    let user_id = query.get(&"user_id".to_string()).unwrap_or(&"1".to_string()).clone();
+    let user_id = query
+        .get(&"user_id".to_string())
+        .unwrap_or(&"1".to_string())
+        .clone();
     let num_user_id = user_id.parse::<i32>();
     if num_user_id.is_err() {
         return Ok("{\"message\": \"user_id is invalid\"}".into());
@@ -74,21 +56,11 @@ pub async fn detail_handler(
         return Ok("{\"message\": \"account is not found\"}".into());
     }
     let account = account.unwrap();
-    Ok(format!(
-        "[ {} ]",
-        tables
-            .iter()
-            .map(|t| beatoraja_play_recommend::Controller::for_server(
-                t.clone(),
-                repos.song_data(),
-                repos.score(account.clone()).unwrap(),
-                Command::Detail,
-            )
-            .run(date(&query))
-            .to_string())
-            .collect::<Vec<String>>()
-            .join(",")
-    ))
+
+    let songs = repos.song_data();
+    let scores = repos.score(account).unwrap();
+    let date = date(&query);
+    Ok(tables.make_detail(&songs, &scores, &date))
 }
 
 pub async fn my_detail_handler(
@@ -110,21 +82,11 @@ pub async fn my_detail_handler(
         return Ok("{\"message\": \"account is not found\"}".into());
     }
     let account = account.unwrap();
-    Ok(format!(
-        "[ {} ]",
-        tables
-            .iter()
-            .map(|t| beatoraja_play_recommend::Controller::for_server(
-                t.clone(),
-                repos.song_data(),
-                repos.score(account.clone()).unwrap(),
-                Command::Detail,
-            )
-            .run(date(&query))
-            .to_string())
-            .collect::<Vec<String>>()
-            .join(",")
-    ))
+
+    let songs = repos.song_data();
+    let scores = repos.score(account).unwrap();
+    let date = date(&query);
+    Ok(tables.make_detail(&songs, &scores, &date))
 }
 
 pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
