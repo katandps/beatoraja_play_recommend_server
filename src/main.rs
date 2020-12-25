@@ -31,21 +31,21 @@ async fn main() {
     let health_route = warp::get()
         .and(warp::path("health"))
         .and(handler::with_db(db_pool.clone()))
-        .and_then(handler::health_handler);
+        .and_then(handler::health::health_handler);
 
     let my_detail_route = warp::get()
         .and(warp::path("my_detail"))
         .and(warp::path::end())
         .and(handler::with_table(tables.clone()))
         .and(warp::query::<HashMap<String, String>>())
-        .and_then(handler::my_detail_handler);
+        .and_then(handler::detail::my_detail_handler);
 
     let detail_route = warp::get()
         .and(warp::path("detail"))
         .and(warp::path::end())
         .and(handler::with_table(tables.clone()))
         .and(warp::query::<HashMap<String, String>>())
-        .and_then(handler::detail_handler);
+        .and_then(handler::detail::detail_handler);
 
     let history_route = warp::get()
         .and(warp::path("history"))
@@ -56,21 +56,21 @@ async fn main() {
         .and(warp::path("score"))
         .and(warp::multipart::form().max_length(100 * 1024 * 1024))
         .and(warp::query::<HashMap<String, String>>())
-        .and_then(handler::upload_score_handler);
+        .and_then(handler::upload::upload_score_handler);
 
     let scorelog_upload_route = warp::post()
         .and(warp::path("upload"))
         .and(warp::path("score_log"))
         .and(warp::multipart::form().max_length(100 * 1024 * 1024))
         .and(warp::query::<HashMap<String, String>>())
-        .and_then(handler::upload_score_log_handler);
+        .and_then(handler::upload::upload_score_log_handler);
 
     let songdata_upload_route = warp::post()
         .and(warp::path("upload"))
         .and(warp::path("song_data"))
         .and(warp::multipart::form().max_length(100 * 1024 * 1024))
         .and(warp::query::<HashMap<String, String>>())
-        .and_then(handler::upload_song_data_handler);
+        .and_then(handler::upload::upload_song_data_handler);
 
     let route = health_route
         .or(tables_route)
