@@ -1,4 +1,4 @@
-use beatoraja_play_recommend::{MySQLClient, SongRepository, Tables};
+use beatoraja_play_recommend::{MySQLClient, Tables};
 use std::collections::HashMap;
 use warp::{Rejection, Reply};
 

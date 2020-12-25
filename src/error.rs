@@ -22,8 +22,10 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
             CustomError::DirectoryCouldNotCreated => {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Upload Failed")
             }
-            CustomError::FileIsNotComplete => (StatusCode::OK, "File Is Not Complete"),
+            CustomError::FileIsNotFound => (StatusCode::OK, "File Is Not Found"),
             CustomError::SaveIsNotComplete => (StatusCode::OK, "Save Is Not Complete"),
+            CustomError::FileIsNotDeleted => (StatusCode::OK, "File Is Not Deleted"),
+            CustomError::FileIsInvalid => (StatusCode::OK, "File Is Invalid"),
         }
     } else if let Some(_) = err.find::<warp::filters::body::BodyDeserializeError>() {
         (StatusCode::BAD_REQUEST, "Invalid Body")
@@ -48,7 +50,9 @@ pub enum CustomError {
     ReadingFileError,
     WritingFileError,
     DirectoryCouldNotCreated,
-    FileIsNotComplete,
+    FileIsNotFound,
+    FileIsInvalid,
+    FileIsNotDeleted,
     SaveIsNotComplete,
 }
 impl CustomError {
