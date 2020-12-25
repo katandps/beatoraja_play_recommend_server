@@ -17,6 +17,7 @@ const TLS_KEY_PATH_DEFAULT: &str = "./files/key.rsa";
 async fn main() {
     env::set_var("RUST_LOG", "info");
     env_logger::init();
+    let log = warp::log("example");
 
     let db_pool = get_db_pool();
 
@@ -50,15 +51,56 @@ async fn main() {
         .and(warp::path("history"))
         .and_then(handler::history_handler);
 
+    let score_upload_route = warp::post()
+        .and(warp::path("upload"))
+        .and(warp::path("score"))
+        .and(warp::multipart::form().max_length(100 * 1024 * 1024))
+        .and(warp::query::<HashMap<String, String>>())
+        .and_then(handler::upload_score_handler);
+
+    let scorelog_upload_route = warp::post()
+        .and(warp::path("upload"))
+        .and(warp::path("score_log"))
+        .and(warp::multipart::form().max_length(100 * 1024 * 1024))
+        .and(warp::query::<HashMap<String, String>>())
+        .and_then(handler::upload_score_log_handler);
+
+    let songdata_upload_route = warp::post()
+        .and(warp::path("upload"))
+        .and(warp::path("song_data"))
+        .and(warp::multipart::form().max_length(100 * 1024 * 1024))
+        .and(warp::query::<HashMap<String, String>>())
+        .and_then(handler::upload_song_data_handler);
+
     let route = health_route
         .or(tables_route)
         .or(detail_route)
         .or(my_detail_route)
         .or(history_route)
-        .with(warp::cors().allow_any_origin())
-        .recover(error::handle_rejection);
+        .or(score_upload_route)
+        .or(scorelog_upload_route)
+        .or(songdata_upload_route)
+        .recover(error::handle_rejection)
+        .with(
+            warp::cors()
+                .allow_any_origin()
+                .allow_methods(vec!["GET", "POST", "OPTIONS"])
+                .allow_headers(vec![
+                    "x-requested-with",
+                    "origin",
+                    "referer",
+                    "x-csrftoken",
+                    "content-type",
+                    "content-length",
+                    "accept",
+                    "accept-encoding",
+                    "accept-language",
+                    "user-agent",
+                ]),
+        )
+        .with(log);
 
-    let (_http_addr, http_warp) = warp::serve(route.clone()).bind_ephemeral(([0,0,0,0], 8000));
+    let (_http_addr, http_warp) = warp::serve(route.clone()).bind_ephemeral(([0, 0, 0, 0], 8000));
 
     let (_https_addr, https_warp) = warp::serve(route.clone())
         .tls()
