@@ -1,7 +1,9 @@
 use crate::error::CustomError;
+use beatoraja_play_recommend::{Account, MySQLClient, ScoreRepository, SqliteClient};
 use bytes::BufMut;
 use futures::TryStreamExt;
 use std::collections::HashMap;
+use tokio::stream::StreamExt;
 use warp::filters::multipart::{FormData, Part};
 use warp::{Rejection, Reply};
 
@@ -9,26 +11,42 @@ pub async fn upload_score_handler(
     form: FormData,
     query: HashMap<String, String>,
 ) -> std::result::Result<impl Reply, Rejection> {
-    let profile = super::get_profile(&query)?;
-    let dir_name = profile.user_id;
+    let account = super::get_account(&query)?;
+    let dir_name = account.user_id();
     save_sqlite_file(form, dir_name.clone(), "score".into()).await?;
-    update_score_data(dir_name).await
+    update_score_data(account, dir_name).await
 }
 
 pub async fn upload_score_log_handler(
     form: FormData,
     query: HashMap<String, String>,
 ) -> std::result::Result<impl Reply, Rejection> {
-    let profile = super::get_profile(&query)?;
-    let dir_name = profile.user_id;
+    let account = super::get_account(&query)?;
+    let dir_name = account.user_id();
     save_sqlite_file(form, dir_name.clone(), "score_log".into()).await?;
-    update_score_data(dir_name).await
+    update_score_data(account, dir_name).await
 }
 
-async fn update_score_data(dir_name: String) -> Result<String, Rejection> {
-    let entries = tokio::fs::read_dir(format!("./files/{}", dir_name)).await;
-    dbg!(&entries);
-    Ok("aiueo".into())
+async fn update_score_data(account: Account, dir_name: String) -> Result<String, Rejection> {
+    let score_file_name = format!("./files/{}/score.db", dir_name);
+    let scorelog_file_name = format!("./files/{}/scorelog.db", dir_name);
+
+    let _score_file = tokio::fs::read(&score_file_name)
+        .await
+        .map_err(|_| CustomError::FileIsNotComplete.rejection())?;
+    let _scorelog_file = tokio::fs::read(&scorelog_file_name)
+        .await
+        .map_err(|_| CustomError::FileIsNotComplete.rejection())?;
+
+    let sqlite_client = SqliteClient::new(scorelog_file_name, score_file_name, "".into());
+    let mysql_client = MySQLClient::new();
+
+    let scores = sqlite_client.score();
+    mysql_client
+        .save_score(account, scores)
+        .map_err(|_| CustomError::SaveIsNotComplete.rejection())?;
+
+    Ok("Score Is Updated.".into())
 }
 
 pub async fn upload_song_data_handler(

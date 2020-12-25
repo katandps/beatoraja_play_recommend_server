@@ -49,9 +49,9 @@ fn get_valid_token(query: &HashMap<String, String>) -> Result<Token<IdPayload>, 
         .map_err(|_| CustomError::TokenIsInvalid.rejection())
 }
 
-fn get_profile(query: &HashMap<String, String>) -> Result<Profile, Rejection> {
+fn get_profile(query: &HashMap<String, String>) -> Result<GoogleProfile, Rejection> {
     let id_token = get_valid_token(query)?;
-    Ok(Profile {
+    Ok(GoogleProfile {
         user_id: id_token.get_claims().get_subject(),
         email: id_token.get_payload().get_email(),
         name: id_token.get_payload().get_name(),
@@ -62,13 +62,6 @@ fn get_account(query: &HashMap<String, String>) -> Result<Account, Rejection> {
     let profile = get_profile(&query)?;
     let repos = MySQLClient::new();
     repos
-        .account(profile.email)
+        .account(&profile)
         .map_err(|_| CustomError::AccountIsNotFound.rejection())
-}
-
-#[derive(Clone, Debug)]
-struct Profile {
-    user_id: String,
-    email: String,
-    name: String,
 }
