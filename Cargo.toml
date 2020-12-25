@@ -20,6 +20,6 @@ bytes = "0.5.6"
 diesel = { version = "1.4.5", features = ["mysql", "r2d2"] }
 chrono = "0.4.19"
 
-#beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "8ce87952" }
+beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "678a37c8" }
 #開発用
-beatoraja_play_recommend = { path = "../beatoraja_play_recommend" }
+#beatoraja_play_recommend = { path = "../beatoraja_play_recommend" }
