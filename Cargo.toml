@@ -4,21 +4,22 @@ version = "0.1.0"
 authors = ["katand <katandps@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 tokio = { version = "0.2", features = ["full"] }
 warp = { version = "0.2", features = ["tls"] }
 futures = "0.3.8"
-
+anyhow = "1.0.36"
 env_logger = "0.7.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0"
 serde_json = "1.0"
-thiserror = "1.0"
+google-jwt-verify = { version = "0.3.0", features = ["async"] }
+r2d2 = "0.8.9"
+bytes = "0.5.6"
 
+diesel = { version = "1.4.5", features = ["mysql", "r2d2"] }
 chrono = "0.4.19"
 
-beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "43e12bf6"}
+beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "678a37c8" }
 #開発用
 #beatoraja_play_recommend = { path = "../beatoraja_play_recommend" }
