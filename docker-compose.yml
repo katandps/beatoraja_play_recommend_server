@@ -32,7 +32,7 @@ services:
       MYSQL_PASSWORD: docker
 
   builder:
-    image: rust:1.48
+    build: ./docker/builder/
     container_name: builder
     ports:
       - "8080:80"
