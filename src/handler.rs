@@ -10,6 +10,7 @@ use google_jwt_verify::{IdPayload, Token};
 use r2d2::Pool;
 use std::collections::HashMap;
 use std::convert::Infallible;
+use warp::http::StatusCode;
 use warp::{Filter, Rejection, Reply};
 
 pub fn with_db(
@@ -30,6 +31,10 @@ pub async fn table_handler(tables: Tables) -> std::result::Result<impl Reply, Re
 pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
     let repos = beatoraja_play_recommend::SqliteClient::by_config();
     Ok(serde_json::to_string(&repos.player().diff()).unwrap())
+}
+
+pub async fn account_handler(query: HashMap<String, String>) -> Result<impl Reply, Rejection> {
+    get_account(&query).map(|_| StatusCode::OK)
 }
 
 fn date(map: &HashMap<String, String>) -> UpdatedAt {

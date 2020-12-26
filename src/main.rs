@@ -33,6 +33,11 @@ async fn main() {
         .and(handler::with_db(db_pool.clone()))
         .and_then(handler::health::health_handler);
 
+    let account_route = warp::get()
+        .and(warp::path("account"))
+        .and(warp::query::<HashMap<String, String>>())
+        .and_then(handler::account_handler);
+
     let my_detail_route = warp::get()
         .and(warp::path("my_detail"))
         .and(warp::path::end())
@@ -73,6 +78,7 @@ async fn main() {
         .and_then(handler::upload::upload_song_data_handler);
 
     let route = health_route
+        .or(account_route)
         .or(tables_route)
         .or(detail_route)
         .or(my_detail_route)
