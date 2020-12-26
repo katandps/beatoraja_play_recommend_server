@@ -6,3 +6,6 @@ $(aws ecr get-login --no-include-email)
 docker-compose down
 docker system prune --force
 docker-compose up -d
+
+#migrate
+docker-compose run builder diesel migration run
