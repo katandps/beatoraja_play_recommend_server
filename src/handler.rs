@@ -47,8 +47,8 @@ fn date(map: &HashMap<String, String>) -> UpdatedAt {
 
 fn get_valid_token(token: String) -> Result<Token<IdPayload>, Rejection> {
     let client = google_jwt_verify::Client::new(&config().google_oauth_client_id());
-    tokio::task::block_in_place(move || client.verify_id_token(&token)).map_err(|e| {
-        dbg!(&e);
+    tokio::task::block_in_place(|| client.verify_id_token(&token)).map_err(|e| {
+        dbg!(&e, &token);
         CustomError::TokenIsInvalid.rejection()
     })
 }
