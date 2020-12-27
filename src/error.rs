@@ -36,6 +36,7 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
         (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error")
     };
 
+    println!("{} {}", code, message);
     let json = warp::reply::json(&ErrorResponse {
         message: message.into(),
     });
