@@ -32,9 +32,10 @@ pub async fn detail_handler(
 
 pub async fn my_detail_handler(
     tables: Tables,
+    token: String,
     query: HashMap<String, String>,
 ) -> Result<impl Reply, Rejection> {
-    let account = super::get_account(&query)?;
+    let account = super::get_account(token)?;
     let repos = MySQLClient::new();
 
     let songs = repos.song_data();

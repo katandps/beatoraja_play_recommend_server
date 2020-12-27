@@ -35,13 +35,14 @@ async fn main() {
 
     let account_route = warp::get()
         .and(warp::path("account"))
-        .and(warp::query::<HashMap<String, String>>())
+        .and(warp::header::<String>("oauth-token"))
         .and_then(handler::account_handler);
 
     let my_detail_route = warp::get()
         .and(warp::path("my_detail"))
         .and(warp::path::end())
         .and(handler::with_table(tables.clone()))
+        .and(warp::header::<String>("oauth-token"))
         .and(warp::query::<HashMap<String, String>>())
         .and_then(handler::detail::my_detail_handler);
 
@@ -60,21 +61,21 @@ async fn main() {
         .and(warp::path("upload"))
         .and(warp::path("score"))
         .and(warp::multipart::form().max_length(100 * 1024 * 1024))
-        .and(warp::query::<HashMap<String, String>>())
+        .and(warp::header::<String>("oauth-token"))
         .and_then(handler::upload::upload_score_handler);
 
     let scorelog_upload_route = warp::post()
         .and(warp::path("upload"))
         .and(warp::path("score_log"))
         .and(warp::multipart::form().max_length(100 * 1024 * 1024))
-        .and(warp::query::<HashMap<String, String>>())
+        .and(warp::header::<String>("oauth-token"))
         .and_then(handler::upload::upload_score_log_handler);
 
     let songdata_upload_route = warp::post()
         .and(warp::path("upload"))
         .and(warp::path("song_data"))
         .and(warp::multipart::form().max_length(100 * 1024 * 1024))
-        .and(warp::query::<HashMap<String, String>>())
+        .and(warp::header::<String>("oauth-token"))
         .and_then(handler::upload::upload_song_data_handler);
 
     let route = health_route
@@ -96,6 +97,7 @@ async fn main() {
                     "origin",
                     "referer",
                     "x-csrftoken",
+                    "oauth-token",
                     "content-type",
                     "content-length",
                     "accept",

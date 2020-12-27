@@ -12,7 +12,6 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
         (StatusCode::NOT_FOUND, "Not Found")
     } else if let Some(e) = err.find::<CustomError>() {
         match e {
-            CustomError::TokenIsNotFound => (StatusCode::UNAUTHORIZED, "Token Not Found"),
             CustomError::TokenIsInvalid => (StatusCode::UNAUTHORIZED, "Token Is Invalid"),
             CustomError::AccountIsNotFound => (StatusCode::BAD_REQUEST, "Account Not Found"),
             CustomError::ReadingFileError => (StatusCode::BAD_REQUEST, "Reading File Error"),
@@ -45,7 +44,6 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
 
 #[derive(Debug)]
 pub enum CustomError {
-    TokenIsNotFound,
     TokenIsInvalid,
     AccountIsNotFound,
     ReadingFileError,

@@ -2,15 +2,14 @@ use crate::error::CustomError;
 use beatoraja_play_recommend::{Account, MySQLClient, ScoreRepository, SqliteClient};
 use bytes::BufMut;
 use futures::TryStreamExt;
-use std::collections::HashMap;
 use warp::filters::multipart::{FormData, Part};
 use warp::{Rejection, Reply};
 
 pub async fn upload_score_handler(
     form: FormData,
-    query: HashMap<String, String>,
+    token: String,
 ) -> std::result::Result<impl Reply, Rejection> {
-    let account = super::get_account(&query)?;
+    let account = super::get_account(token)?;
     let dir_name = account.user_id();
     save_sqlite_file(form, dir_name.clone(), "score".into()).await?;
     update_score_data(account, dir_name).await
@@ -18,9 +17,9 @@ pub async fn upload_score_handler(
 
 pub async fn upload_score_log_handler(
     form: FormData,
-    query: HashMap<String, String>,
+    token: String,
 ) -> std::result::Result<impl Reply, Rejection> {
-    let account = super::get_account(&query)?;
+    let account = super::get_account(token)?;
     let dir_name = account.user_id();
     save_sqlite_file(form, dir_name.clone(), "scorelog".into()).await?;
     update_score_data(account, dir_name).await
@@ -60,9 +59,9 @@ async fn update_score_data(account: Account, dir_name: String) -> Result<String,
 
 pub async fn upload_song_data_handler(
     form: FormData,
-    query: HashMap<String, String>,
+    token: String,
 ) -> std::result::Result<String, Rejection> {
-    let account = super::get_account(&query)?;
+    let account = super::get_account(token)?;
     let dir_name = account.user_id();
     save_sqlite_file(form, dir_name.clone(), "songdata".into()).await?;
 

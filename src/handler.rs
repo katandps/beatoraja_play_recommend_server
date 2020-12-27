@@ -33,8 +33,8 @@ pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
     Ok(serde_json::to_string(&repos.player().diff()).unwrap())
 }
 
-pub async fn account_handler(query: HashMap<String, String>) -> Result<impl Reply, Rejection> {
-    get_account(&query).map(|_| StatusCode::OK)
+pub async fn account_handler(token: String) -> Result<impl Reply, Rejection> {
+    get_account(token).map(|_| StatusCode::OK)
 }
 
 fn date(map: &HashMap<String, String>) -> UpdatedAt {
@@ -45,17 +45,14 @@ fn date(map: &HashMap<String, String>) -> UpdatedAt {
     }
 }
 
-fn get_valid_token(query: &HashMap<String, String>) -> Result<Token<IdPayload>, Rejection> {
-    let token = query
-        .get("token")
-        .ok_or(CustomError::TokenIsNotFound.rejection())?;
+fn get_valid_token(token: String) -> Result<Token<IdPayload>, Rejection> {
     let client = google_jwt_verify::Client::new(&config().google_oauth_client_id());
     tokio::task::block_in_place(move || client.verify_id_token(&token))
         .map_err(|_| CustomError::TokenIsInvalid.rejection())
 }
 
-fn get_profile(query: &HashMap<String, String>) -> Result<GoogleProfile, Rejection> {
-    let id_token = get_valid_token(query)?;
+fn get_profile(token: String) -> Result<GoogleProfile, Rejection> {
+    let id_token = get_valid_token(token)?;
     Ok(GoogleProfile {
         user_id: id_token.get_claims().get_subject(),
         email: id_token.get_payload().get_email(),
@@ -63,8 +60,8 @@ fn get_profile(query: &HashMap<String, String>) -> Result<GoogleProfile, Rejecti
     })
 }
 
-fn get_account(query: &HashMap<String, String>) -> Result<Account, Rejection> {
-    let profile = get_profile(&query)?;
+fn get_account(token: String) -> Result<Account, Rejection> {
+    let profile = get_profile(token)?;
     let repos = MySQLClient::new();
     repos
         .account(&profile)
