@@ -104,7 +104,7 @@ checksum = "53d1ccbaf7d9ec9537465a97bf19edc1a4e158ecb49fc16178202238c569cc42"
 [[package]]
 name = "beatoraja_play_recommend"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=8377df92#8377df92b4f2e7588d47b5826d594d6a06f255b2"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=559ce1dc#559ce1dcb442f409dabe4f4dc023a36fcdcab6eb"
 dependencies = [
  "anyhow",
  "config",
@@ -240,7 +240,7 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=8377df92#8377df92b4f2e7588d47b5826d594d6a06f255b2"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=559ce1dc#559ce1dcb442f409dabe4f4dc023a36fcdcab6eb"
 dependencies = [
  "lazy_static",
  "serde",
@@ -1067,7 +1067,7 @@ dependencies = [
 [[package]]
 name = "model"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=8377df92#8377df92b4f2e7588d47b5826d594d6a06f255b2"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=559ce1dc#559ce1dcb442f409dabe4f4dc023a36fcdcab6eb"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1099,7 +1099,7 @@ dependencies = [
 [[package]]
 name = "mysql"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=8377df92#8377df92b4f2e7588d47b5826d594d6a06f255b2"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=559ce1dc#559ce1dcb442f409dabe4f4dc023a36fcdcab6eb"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1953,7 +1953,7 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 [[package]]
 name = "sqlite"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=8377df92#8377df92b4f2e7588d47b5826d594d6a06f255b2"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=559ce1dc#559ce1dcb442f409dabe4f4dc023a36fcdcab6eb"
 dependencies = [
  "anyhow",
  "config",
@@ -2036,7 +2036,7 @@ dependencies = [
 [[package]]
 name = "table"
 version = "0.1.0"
-source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=8377df92#8377df92b4f2e7588d47b5826d594d6a06f255b2"
+source = "git+https://github.com/katandps/beatoraja_play_recommend.git?rev=559ce1dc#559ce1dcb442f409dabe4f4dc023a36fcdcab6eb"
 dependencies = [
  "anyhow",
  "config",
