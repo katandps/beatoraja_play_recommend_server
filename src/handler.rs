@@ -3,6 +3,7 @@ pub mod health;
 pub mod upload;
 
 use crate::error::*;
+use beatoraja_play_recommend::config;
 use beatoraja_play_recommend::*;
 use diesel::r2d2::ConnectionManager;
 use diesel::MysqlConnection;
@@ -10,7 +11,7 @@ use google_jwt_verify::{IdPayload, Token};
 use r2d2::Pool;
 use std::collections::HashMap;
 use std::convert::Infallible;
-use warp::http::StatusCode;
+use warp::http::{StatusCode, Uri};
 use warp::{Filter, Rejection, Reply};
 
 pub fn with_db(
@@ -35,6 +36,41 @@ pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
 
 pub async fn account_handler(token: String) -> Result<impl Reply, Rejection> {
     get_account(token).map(|_| StatusCode::OK)
+}
+
+pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejection> {
+    let code = query
+        .get(&"code".to_string())
+        .cloned()
+        .ok_or(CustomError::CodeIsNotFound.rejection())?;
+    let mut body = HashMap::new();
+    body.insert("client_id", config().google_oauth_client_id());
+    body.insert("client_secret", config().google_oauth_client_secret());
+    body.insert("redirect_uri", config().google_oauth_redirect_uri());
+    body.insert("code", code.clone());
+    body.insert("grant_type", "authorization_code".to_string());
+    let res = reqwest::Client::new()
+        .post("https://accounts.google.com/o/oauth2/token")
+        .json(&body)
+        .send()
+        .await
+        .map_err(|_| CustomError::GoogleEndPointIsDown.rejection())?;
+    let body = res
+        .text()
+        .await
+        .map_err(|_| CustomError::GoogleResponseIsInvalid.rejection())?;
+    let json: serde_json::Value = serde_json::from_str(&body)
+        .map_err(|_| CustomError::GoogleResponseIsInvalid.rejection())?;
+    let obj = json.as_object().unwrap();
+
+    // todo ここでのみアカウントを作成する
+    // todo sessionに入れるランダムキーを作る expireも作る
+
+    let key = format!("key={}", "This is session key. Set a enough random key.");
+    let uri = Uri::from_maybe_shared(format!("{}/home", config().client_url())).unwrap();
+    let redirect = warp::redirect(uri);
+    let redirect = warp::reply::with_header(redirect, http::header::SET_COOKIE, key);
+    Ok(redirect)
 }
 
 fn date(map: &HashMap<String, String>) -> UpdatedAt {

@@ -78,6 +78,11 @@ async fn main() {
         .and(warp::header::<String>("oauth-token"))
         .and_then(handler::upload::upload_song_data_handler);
 
+    let oauth_redirect_route = warp::get()
+        .and(warp::path("oauth"))
+        .and(warp::query::<HashMap<String, String>>())
+        .and_then(handler::oauth);
+
     let route = health_route
         .or(account_route)
         .or(tables_route)
@@ -87,6 +92,7 @@ async fn main() {
         .or(score_upload_route)
         .or(scorelog_upload_route)
         .or(songdata_upload_route)
+        .or(oauth_redirect_route)
         .recover(error::handle_rejection)
         .with(
             warp::cors()

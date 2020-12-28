@@ -12,6 +12,15 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
         (StatusCode::NOT_FOUND, "Not Found")
     } else if let Some(e) = err.find::<CustomError>() {
         match e {
+            CustomError::CodeIsNotFound => (StatusCode::BAD_REQUEST, "Code Is Not Found"),
+            CustomError::GoogleEndPointIsDown => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Google End Point Is Down",
+            ),
+            CustomError::GoogleResponseIsInvalid => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Google Response Is Invalid",
+            ),
             CustomError::TokenIsInvalid => (StatusCode::UNAUTHORIZED, "Token Is Invalid"),
             CustomError::AccountIsNotFound => (StatusCode::BAD_REQUEST, "Account Not Found"),
             CustomError::ReadingFileError => (StatusCode::BAD_REQUEST, "Reading File Error"),
@@ -44,6 +53,9 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
 
 #[derive(Debug)]
 pub enum CustomError {
+    CodeIsNotFound,
+    GoogleEndPointIsDown,
+    GoogleResponseIsInvalid,
     TokenIsInvalid,
     AccountIsNotFound,
     ReadingFileError,

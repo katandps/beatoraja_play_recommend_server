@@ -23,4 +23,6 @@ table_index=1
 local_cache_url="./files/cache.json"
 coloring_table=false
 
+
+#-----------for develop-----------#
 google_oauth_client_id="746230605395-g23hslpeod50u4h99gmrfg7ulref0a3u.apps.googleusercontent.com"
