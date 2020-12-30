@@ -2,7 +2,7 @@ pub mod detail;
 pub mod health;
 pub mod upload;
 
-use crate::error::HandleError::{FromUtf8Error, GoogleResponseIsInvalid, OtherError};
+use crate::error::HandleError::{FromUtf8Error, GoogleResponseIsInvalid};
 use crate::error::*;
 use crate::session::save_user_id;
 use beatoraja_play_recommend::config;
@@ -93,7 +93,7 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
         .register(&profile)
         .map_err(|_| HandleError::AccountIsNotFound.rejection())?;
     let key = save_user_id(account.user_id).map_err(|e| HandleError::OtherError(e).rejection())?;
-    let header = format!("session-token={}", key);
+    let header = format!("session-token={};domain={}", key, config().client_domain());
 
     let uri = Uri::from_maybe_shared(format!("{}/home", config().client_url())).unwrap();
     let redirect = warp::redirect(uri);
