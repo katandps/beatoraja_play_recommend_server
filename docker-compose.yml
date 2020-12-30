@@ -38,6 +38,13 @@ services:
       MYSQL_USER: docker
       MYSQL_PASSWORD: docker
 
+  session-redis:
+    image: redis
+    container_name: session-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
   builder:
     build: ./docker/builder/
     container_name: builder

@@ -2,28 +2,15 @@ pub mod detail;
 pub mod health;
 pub mod upload;
 
+use crate::error::HandleError::{FromUtf8Error, GoogleResponseIsInvalid, OtherError};
 use crate::error::*;
+use crate::session::save_user_id;
 use beatoraja_play_recommend::config;
 use beatoraja_play_recommend::*;
-use diesel::r2d2::ConnectionManager;
-use diesel::MysqlConnection;
-use google_jwt_verify::{IdPayload, Token};
-use r2d2::Pool;
+use http::StatusCode;
 use std::collections::HashMap;
-use std::convert::Infallible;
-use warp::http::{StatusCode, Uri};
-use warp::{Filter, Rejection, Reply};
-
-pub fn with_db(
-    db_pool: Pool<ConnectionManager<MysqlConnection>>,
-) -> impl Filter<Extract = (Pool<ConnectionManager<MysqlConnection>>,), Error = Infallible> + Clone
-{
-    warp::any().map(move || db_pool.clone())
-}
-
-pub fn with_table(tables: Tables) -> impl Filter<Extract = (Tables,), Error = Infallible> + Clone {
-    warp::any().map(move || tables.clone())
-}
+use warp::http::Uri;
+use warp::{Rejection, Reply};
 
 pub async fn table_handler(tables: Tables) -> std::result::Result<impl Reply, Rejection> {
     Ok(serde_json::to_string(&tables.format()).unwrap())
@@ -34,15 +21,24 @@ pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
     Ok(serde_json::to_string(&repos.player().diff()).unwrap())
 }
 
-pub async fn account_handler(token: String) -> Result<impl Reply, Rejection> {
-    get_account(token).map(|_| StatusCode::OK)
+pub async fn account_handler(session_key: String) -> Result<impl Reply, Rejection> {
+    match crate::session::get_account_by_session(&session_key) {
+        Ok(_account) => Ok(StatusCode::OK),
+        Err(e) => Err(HandleError::OtherError(e).rejection()),
+    }
+}
+
+pub async fn logout_handler(session_key: String) -> Result<impl Reply, Rejection> {
+    crate::session::remove_session(&session_key)
+        .map_err(|e| HandleError::OtherError(e).rejection())?;
+    Ok(StatusCode::OK)
 }
 
 pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejection> {
     let code = query
         .get(&"code".to_string())
         .cloned()
-        .ok_or(CustomError::CodeIsNotFound.rejection())?;
+        .ok_or(HandleError::AuthorizationCodeIsNotFound.rejection())?;
     let mut body = HashMap::new();
     body.insert("client_id", config().google_oauth_client_id());
     body.insert("client_secret", config().google_oauth_client_secret());
@@ -54,23 +50,58 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
         .json(&body)
         .send()
         .await
-        .map_err(|_| CustomError::GoogleEndPointIsDown.rejection())?;
+        .map_err(|e| HandleError::ReqwestError(e).rejection())?;
     let body = res
         .text()
         .await
-        .map_err(|_| CustomError::GoogleResponseIsInvalid.rejection())?;
+        .map_err(|_| HandleError::GoogleResponseIsInvalid.rejection())?;
     let json: serde_json::Value = serde_json::from_str(&body)
-        .map_err(|_| CustomError::GoogleResponseIsInvalid.rejection())?;
+        .map_err(|_| HandleError::GoogleResponseIsInvalid.rejection())?;
     let obj = json.as_object().unwrap();
 
-    // todo ここでのみアカウントを作成する
-    // todo sessionに入れるランダムキーを作る expireも作る
+    let token = &obj
+        .get(&"id_token".to_string())
+        .ok_or(GoogleResponseIsInvalid.rejection())?
+        .to_string()
+        .replace("\"", "")
+        .replace(",", "");
+    let mut segments = token.split('.');
+    let _encoded_header = segments.next().ok_or(GoogleResponseIsInvalid.rejection())?;
+    let encoded_payload = segments.next().ok_or(GoogleResponseIsInvalid.rejection())?;
 
-    let key = format!("key={}", "This is session key. Set a enough random key.");
+    let payload_string = String::from_utf8(
+        base64::decode_config(&encoded_payload, base64::URL_SAFE_NO_PAD).unwrap(),
+    )
+    .map_err(|e| FromUtf8Error(e).rejection())?;
+    let payload_json: serde_json::Value =
+        serde_json::from_str::<serde_json::Value>(&payload_string)
+            .map_err(|_| HandleError::GoogleResponseIsInvalid.rejection())?;
+    let payload = payload_json
+        .as_object()
+        .ok_or(HandleError::GoogleResponseIsInvalid.rejection())?;
+
+    let user_id = payload.get(&"sub".to_string()).unwrap().to_string();
+    let email = payload.get(&"email".to_string()).unwrap().to_string();
+    let name = "default_name".to_string();
+    let profile = GoogleProfile {
+        user_id,
+        email,
+        name,
+    };
+    let repos = MySQLClient::new();
+    let account = repos
+        .register(&profile)
+        .map_err(|_| HandleError::AccountIsNotFound.rejection())?;
+    let key = save_user_id(account.user_id).map_err(|e| HandleError::OtherError(e).rejection())?;
+    let header = format!("session-token={}", key);
+
     let uri = Uri::from_maybe_shared(format!("{}/home", config().client_url())).unwrap();
     let redirect = warp::redirect(uri);
-    let redirect = warp::reply::with_header(redirect, http::header::SET_COOKIE, key);
-    Ok(redirect)
+    Ok(warp::reply::with_header(
+        redirect,
+        http::header::SET_COOKIE,
+        header,
+    ))
 }
 
 fn date(map: &HashMap<String, String>) -> UpdatedAt {
@@ -79,29 +110,4 @@ fn date(map: &HashMap<String, String>) -> UpdatedAt {
     } else {
         UpdatedAt::new()
     }
-}
-
-fn get_valid_token(token: String) -> Result<Token<IdPayload>, Rejection> {
-    let client = google_jwt_verify::Client::new(&config().google_oauth_client_id());
-    tokio::task::block_in_place(|| client.verify_id_token(&token)).map_err(|e| {
-        dbg!(&e, &token);
-        CustomError::TokenIsInvalid.rejection()
-    })
-}
-
-fn get_profile(token: String) -> Result<GoogleProfile, Rejection> {
-    let id_token = get_valid_token(token)?;
-    Ok(GoogleProfile {
-        user_id: id_token.get_claims().get_subject(),
-        email: id_token.get_payload().get_email(),
-        name: id_token.get_payload().get_name(),
-    })
-}
-
-fn get_account(token: String) -> Result<Account, Rejection> {
-    let profile = get_profile(token)?;
-    let repos = MySQLClient::new();
-    repos
-        .account(&profile)
-        .map_err(|_| CustomError::AccountIsNotFound.rejection())
 }

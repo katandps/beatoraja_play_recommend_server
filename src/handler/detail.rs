@@ -1,4 +1,7 @@
-use beatoraja_play_recommend::{MySQLClient, Tables};
+use crate::error::HandleError::{
+    AccountIsNotFound, AccountIsNotSelected, AccountSelectionIsInvalid,
+};
+use beatoraja_play_recommend::{MySQLClient, Scores, Tables};
 use std::collections::HashMap;
 use warp::{Rejection, Reply};
 
@@ -11,35 +14,30 @@ pub async fn detail_handler(
     let repos = MySQLClient::new();
     let user_id = query
         .get(&"user_id".to_string())
-        .unwrap_or(&"1".to_string())
-        .clone();
-    let num_user_id = user_id.parse::<i32>();
-    if num_user_id.is_err() {
-        return Ok("{\"message\": \"user_id is invalid\"}".into());
-    }
-    let num_user_id = num_user_id.unwrap();
-    let account = repos.account_by_id(num_user_id);
-    if account.is_err() {
-        return Ok("{\"message\": \"account is not found\"}".into());
-    }
-    let account = account.unwrap();
-
+        .ok_or(AccountIsNotSelected.rejection())?;
+    let user_id = user_id
+        .parse::<i32>()
+        .map_err(|_| AccountSelectionIsInvalid.rejection())?;
+    let account = repos
+        .account_by_increments(user_id)
+        .map_err(|_| AccountIsNotFound.rejection())?;
     let songs = repos.song_data();
-    let scores = repos.score(account).unwrap();
+    let scores = repos.score(account).unwrap_or(Scores::new(HashMap::new()));
     let date = super::date(&query);
     Ok(tables.make_detail(&songs, &scores, &date))
 }
 
 pub async fn my_detail_handler(
     tables: Tables,
-    token: String,
+    session_key: String,
     query: HashMap<String, String>,
 ) -> Result<impl Reply, Rejection> {
-    let account = super::get_account(token)?;
     let repos = MySQLClient::new();
-
+    let account = crate::session::get_account_by_session(&session_key)
+        .map_err(|_| AccountIsNotFound.rejection())?;
     let songs = repos.song_data();
-    let scores = repos.score(account).unwrap();
+    dbg!(&account);
+    let scores = repos.score(account).unwrap_or(Scores::new(HashMap::new()));
     let date = super::date(&query);
     Ok(tables.make_detail(&songs, &scores, &date))
 }
