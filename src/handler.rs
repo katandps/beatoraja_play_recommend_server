@@ -54,9 +54,9 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
     let body = res
         .text()
         .await
-        .map_err(|_| HandleError::GoogleResponseIsInvalid.rejection())?;
-    let json: serde_json::Value = serde_json::from_str(&body)
-        .map_err(|_| HandleError::GoogleResponseIsInvalid.rejection())?;
+        .map_err(|e| HandleError::ReqwestError(e).rejection())?;
+    let json: serde_json::Value =
+        serde_json::from_str(&body).map_err(|e| HandleError::SerdeJsonError(e).rejection())?;
     let obj = json.as_object().unwrap();
 
     let token = &obj
@@ -75,7 +75,7 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
     .map_err(|e| FromUtf8Error(e).rejection())?;
     let payload_json: serde_json::Value =
         serde_json::from_str::<serde_json::Value>(&payload_string)
-            .map_err(|_| HandleError::GoogleResponseIsInvalid.rejection())?;
+            .map_err(|e| HandleError::SerdeJsonError(e).rejection())?;
     let payload = payload_json
         .as_object()
         .ok_or(HandleError::GoogleResponseIsInvalid.rejection())?;
@@ -88,6 +88,10 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
         email,
         name,
     };
+    println!(
+        "Login: {} {} {}",
+        profile.user_id, profile.name, profile.email
+    );
     let repos = MySQLClient::new();
     let account = repos
         .register(&profile)

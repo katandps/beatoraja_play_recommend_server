@@ -17,20 +17,15 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
         (
             match e {
                 AuthorizationCodeIsNotFound => StatusCode::BAD_REQUEST,
-                ReqwestError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-                GoogleResponseIsInvalid => StatusCode::INTERNAL_SERVER_ERROR,
                 TokenIsInvalid => StatusCode::UNAUTHORIZED,
                 AccountIsNotFound => StatusCode::BAD_REQUEST,
                 AccountIsNotSelected => StatusCode::BAD_REQUEST,
                 AccountSelectionIsInvalid => StatusCode::BAD_REQUEST,
-                IOError(_) => StatusCode::INTERNAL_SERVER_ERROR,
                 ReadingFileError => StatusCode::BAD_REQUEST,
-                DirectoryCouldNotCreated => StatusCode::INTERNAL_SERVER_ERROR,
                 FileIsNotFound => StatusCode::OK,
                 SaveIsNotComplete => StatusCode::OK,
                 FileIsNotDeleted => StatusCode::OK,
                 FileIsInvalid => StatusCode::OK,
-                OtherError(_) => StatusCode::INTERNAL_SERVER_ERROR,
                 _ => StatusCode::INTERNAL_SERVER_ERROR,
             },
             e.to_string(),
@@ -74,6 +69,8 @@ pub enum HandleError {
 
     #[error("IOError: {0:?}")]
     IOError(std::io::Error),
+    #[error("SerdeJsonError: {0:?}")]
+    SerdeJsonError(serde_json::Error),
 
     #[error("Reading File Error")]
     ReadingFileError,
