@@ -6,5 +6,5 @@ create table users
     name varchar(255) not null,
     registered_date datetime not null,
     unique key google_id_unique_key (google_id),
-    unique key gmail_address (google_id)
+    unique key gmail_address (gmail_address)
 );

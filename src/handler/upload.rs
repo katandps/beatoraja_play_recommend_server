@@ -1,5 +1,5 @@
 use crate::error::HandleError;
-use crate::error::HandleError::{AccountIsNotFound, IOError, TokenIsInvalid};
+use crate::error::HandleError::{AccountIsNotFound, IOError, OtherError, TokenIsInvalid};
 use beatoraja_play_recommend::{Account, MySQLClient, ScoreRepository, SqliteClient};
 use bytes::BufMut;
 use futures::TryStreamExt;
@@ -66,10 +66,10 @@ async fn update_score_data(account: Account, dir_name: String) -> Result<String,
 
     let _remove_score = tokio::fs::remove_file(&score_file_name)
         .await
-        .map_err(|_| HandleError::FileIsNotDeleted.rejection())?;
+        .map_err(|_| HandleError::FileIsNotDeleted.rejection());
     let _remove_score_log = tokio::fs::remove_file(&scorelog_file_name)
         .await
-        .map_err(|_| HandleError::FileIsNotDeleted.rejection())?;
+        .map_err(|_| HandleError::FileIsNotDeleted.rejection());
     Ok("Score Is Updated.".into())
 }
 
@@ -97,15 +97,15 @@ pub async fn upload_song_data_handler(
 
     let songs = sqlite_client
         .song_data()
-        .map_err(|_| HandleError::FileIsInvalid.rejection())?;
+        .map_err(|e| OtherError(e).rejection())?;
 
     mysql_client
         .save_song(&songs)
-        .map_err(|_| HandleError::SaveIsNotComplete.rejection())?;
+        .map_err(|e| OtherError(e).rejection())?;
 
     let _remove_data = tokio::fs::remove_file(&song_file_name)
         .await
-        .map_err(|e| IOError(e).rejection())?;
+        .map_err(|e| IOError(e).rejection());
 
     Ok("SongData Is Updated.".into())
 }

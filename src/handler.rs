@@ -2,7 +2,9 @@ pub mod detail;
 pub mod health;
 pub mod upload;
 
-use crate::error::HandleError::{FromUtf8Error, GoogleResponseIsInvalid};
+use crate::error::HandleError::{
+    ChangedNameNotFound, FromUtf8Error, GoogleResponseIsInvalid, OtherError,
+};
 use crate::error::*;
 use crate::session::save_user_id;
 use beatoraja_play_recommend::config;
@@ -23,8 +25,29 @@ pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
 
 pub async fn account_handler(session_key: String) -> Result<impl Reply, Rejection> {
     match crate::session::get_account_by_session(&session_key) {
-        Ok(_account) => Ok(StatusCode::OK),
-        Err(e) => Err(HandleError::OtherError(e).rejection()),
+        Ok(account) => Ok(account.to_json()),
+        Err(e) => Err(OtherError(e).rejection()),
+    }
+}
+
+pub async fn change_name_handler(
+    session_key: String,
+    request_body: HashMap<String, String>,
+) -> Result<impl Reply, Rejection> {
+    match crate::session::get_account_by_session(&session_key) {
+        Ok(account) => {
+            let changed_name = request_body
+                .get(&"changed_name".to_string())
+                .ok_or(ChangedNameNotFound.rejection())?;
+            let repos = MySQLClient::new();
+            let mut new = account.clone();
+            new.set_name(changed_name.clone());
+            repos
+                .rename_account(&new)
+                .map_err(|e| OtherError(e).rejection())?;
+            Ok(new.to_json())
+        }
+        Err(e) => Err(OtherError(e).rejection()),
     }
 }
 
@@ -80,8 +103,16 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
         .as_object()
         .ok_or(HandleError::GoogleResponseIsInvalid.rejection())?;
 
-    let user_id = payload.get(&"sub".to_string()).unwrap().to_string();
-    let email = payload.get(&"email".to_string()).unwrap().to_string();
+    let user_id = payload
+        .get(&"sub".to_string())
+        .unwrap()
+        .to_string()
+        .replace("\"", "");
+    let email = payload
+        .get(&"email".to_string())
+        .unwrap()
+        .to_string()
+        .replace("\"", "");
     let name = "default_name".to_string();
     let profile = GoogleProfile {
         user_id,
@@ -99,7 +130,7 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
     let key = save_user_id(account.user_id).map_err(|e| HandleError::OtherError(e).rejection())?;
     let header = format!("session-token={};domain={}", key, config().client_domain());
 
-    let uri = Uri::from_maybe_shared(format!("{}/home", config().client_url())).unwrap();
+    let uri = Uri::from_maybe_shared(format!("{}", config().client_url())).unwrap();
     let redirect = warp::redirect(uri);
     Ok(warp::reply::with_header(
         redirect,

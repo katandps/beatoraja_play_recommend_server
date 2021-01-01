@@ -79,14 +79,17 @@ pub enum HandleError {
     DirectoryCouldNotCreated,
     #[error("File Is Not Found")]
     FileIsNotFound,
-    #[error("Save Is Not Complete")]
+    #[error("File Is Invalid")]
     FileIsInvalid,
     #[error("File Is Not Deleted")]
     FileIsNotDeleted,
-    #[error("File Is Invalid")]
+    #[error("Save Is Not Complete")]
     SaveIsNotComplete,
     #[error("FromUtf8 Error: {0:?}")]
     FromUtf8Error(FromUtf8Error),
+
+    #[error("Changed Name Is Not Found")]
+    ChangedNameNotFound,
 
     #[error("Other Error: {0}")]
     OtherError(anyhow::Error),

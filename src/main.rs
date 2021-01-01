@@ -40,6 +40,13 @@ async fn main() {
         .and(warp::header::<String>(session::SESSION_KEY))
         .and_then(handler::account_handler);
 
+    let change_name_route = warp::post()
+        .and(warp::path("update"))
+        .and(warp::path("name"))
+        .and(warp::header::<String>(session::SESSION_KEY))
+        .and(warp::body::json())
+        .and_then(handler::change_name_handler);
+
     let logout_route = warp::get()
         .and(warp::path("logout"))
         .and(warp::header::<String>(session::SESSION_KEY))
@@ -92,6 +99,7 @@ async fn main() {
 
     let route = health_route
         .or(account_route)
+        .or(change_name_route)
         .or(logout_route)
         .or(tables_route)
         .or(detail_route)

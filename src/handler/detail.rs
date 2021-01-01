@@ -1,5 +1,5 @@
 use crate::error::HandleError::{
-    AccountIsNotFound, AccountIsNotSelected, AccountSelectionIsInvalid,
+    AccountIsNotFound, AccountIsNotSelected, AccountSelectionIsInvalid, OtherError,
 };
 use beatoraja_play_recommend::{MySQLClient, Scores, Tables};
 use std::collections::HashMap;
@@ -34,9 +34,8 @@ pub async fn my_detail_handler(
 ) -> Result<impl Reply, Rejection> {
     let repos = MySQLClient::new();
     let account = crate::session::get_account_by_session(&session_key)
-        .map_err(|_| AccountIsNotFound.rejection())?;
+        .map_err(|e| OtherError(e).rejection())?;
     let songs = repos.song_data();
-    dbg!(&account);
     let scores = repos.score(account).unwrap_or(Scores::new(HashMap::new()));
     let date = super::date(&query);
     Ok(tables.make_detail(&songs, &scores, &date))
