@@ -1,7 +1,8 @@
 use crate::error::HandleError::{
     AccountIsNotFound, AccountIsNotSelected, AccountSelectionIsInvalid, OtherError,
 };
-use beatoraja_play_recommend::{MySQLClient, Scores, Tables};
+use beatoraja_play_recommend::{DetailResult, MySQLClient, Scores, Tables};
+use serde::Serialize;
 use std::collections::HashMap;
 use warp::{Rejection, Reply};
 
@@ -22,9 +23,14 @@ pub async fn detail_handler(
         .account_by_increments(user_id)
         .map_err(|_| AccountIsNotFound.rejection())?;
     let songs = repos.song_data();
-    let scores = repos.score(account).unwrap_or(Scores::new(HashMap::new()));
+    let scores = repos.score(&account).unwrap_or(Scores::new(HashMap::new()));
     let date = super::date(&query);
-    Ok(tables.make_detail(&songs, &scores, &date))
+    let response = DetailResponse {
+        user_id: account.user_id(),
+        user_name: account.user_name(),
+        score: tables.make_detail(&songs, &scores, &date),
+    };
+    Ok(serde_json::to_string(&response).unwrap())
 }
 
 pub async fn my_detail_handler(
@@ -36,7 +42,19 @@ pub async fn my_detail_handler(
     let account = crate::session::get_account_by_session(&session_key)
         .map_err(|e| OtherError(e).rejection())?;
     let songs = repos.song_data();
-    let scores = repos.score(account).unwrap_or(Scores::new(HashMap::new()));
+    let scores = repos.score(&account).unwrap_or(Scores::new(HashMap::new()));
     let date = super::date(&query);
-    Ok(tables.make_detail(&songs, &scores, &date))
+    let response = DetailResponse {
+        user_id: account.user_id(),
+        user_name: account.user_name(),
+        score: tables.make_detail(&songs, &scores, &date),
+    };
+    Ok(serde_json::to_string(&response).unwrap())
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct DetailResponse {
+    user_id: i32,
+    user_name: String,
+    score: Vec<DetailResult>,
 }

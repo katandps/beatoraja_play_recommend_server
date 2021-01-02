@@ -18,7 +18,7 @@ pub async fn upload_score_handler(
         return Err(AccountIsNotFound.rejection());
     }
     let account = account.unwrap();
-    let dir_name = account.user_id();
+    let dir_name = account.google_id();
     save_sqlite_file(form, dir_name.clone(), "score".into()).await?;
     update_score_data(account, dir_name).await
 }
@@ -36,7 +36,7 @@ pub async fn upload_score_log_handler(
     }
     let account = account.unwrap();
 
-    let dir_name = account.user_id();
+    let dir_name = account.google_id();
     save_sqlite_file(form, dir_name.clone(), "scorelog".into()).await?;
     update_score_data(account, dir_name).await
 }
@@ -85,7 +85,7 @@ pub async fn upload_song_data_handler(
         return Err(AccountIsNotFound.rejection());
     }
     let account = account.unwrap();
-    let dir_name = account.user_id();
+    let dir_name = account.google_id();
     save_sqlite_file(form, dir_name.clone(), "songdata".into()).await?;
 
     let song_file_name = format!("./files/{}/songdata.db", dir_name);

@@ -32,6 +32,6 @@ redis = "0.19.0"
 anyhow = "1.0.36"
 thiserror = "1.0.23"
 
-beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "768bcfc6" }
+beatoraja_play_recommend = { git = "https://github.com/katandps/beatoraja_play_recommend.git", rev = "ab0e0ca7" }
 #開発用
 #beatoraja_play_recommend = { path = "../beatoraja_play_recommend" }

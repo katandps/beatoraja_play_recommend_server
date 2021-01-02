@@ -127,7 +127,8 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
     let account = repos
         .register(&profile)
         .map_err(|_| HandleError::AccountIsNotFound.rejection())?;
-    let key = save_user_id(account.user_id).map_err(|e| HandleError::OtherError(e).rejection())?;
+    let key =
+        save_user_id(account.google_id).map_err(|e| HandleError::OtherError(e).rejection())?;
     let header = format!(
         "session-token={};domain={};max-age=300",
         key,
