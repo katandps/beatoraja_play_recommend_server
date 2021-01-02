@@ -128,7 +128,11 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
         .register(&profile)
         .map_err(|_| HandleError::AccountIsNotFound.rejection())?;
     let key = save_user_id(account.user_id).map_err(|e| HandleError::OtherError(e).rejection())?;
-    let header = format!("session-token={};domain={}", key, config().client_domain());
+    let header = format!(
+        "session-token={};domain={};max-age=300",
+        key,
+        config().client_domain()
+    );
 
     let uri = Uri::from_maybe_shared(format!("{}", config().client_url())).unwrap();
     let redirect = warp::redirect(uri);
