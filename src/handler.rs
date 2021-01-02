@@ -103,6 +103,7 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
         .as_object()
         .ok_or(HandleError::GoogleResponseIsInvalid.rejection())?;
 
+    dbg!(&payload);
     let user_id = payload
         .get(&"sub".to_string())
         .unwrap()
