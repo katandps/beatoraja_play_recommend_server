@@ -106,12 +106,12 @@ pub async fn oauth(query: HashMap<String, String>) -> Result<impl Reply, Rejecti
     dbg!(&payload);
     let user_id = payload
         .get(&"sub".to_string())
-        .unwrap()
+        .ok_or(GoogleResponseIsInvalid.rejection())?
         .to_string()
         .replace("\"", "");
     let email = payload
         .get(&"email".to_string())
-        .unwrap()
+        .ok_or(GoogleResponseIsInvalid.rejection())?
         .to_string()
         .replace("\"", "");
     let name = "default_name".to_string();
