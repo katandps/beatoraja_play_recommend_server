@@ -31,5 +31,5 @@ phases:
       - docker push $TARGET_IMAGE_NAME:latest
 
 cache:
-  path:
+  paths:
     - $HOME/.cargo/**/*
