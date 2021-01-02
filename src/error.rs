@@ -6,7 +6,7 @@ use warp::{http::StatusCode, Rejection, Reply};
 
 #[derive(Serialize)]
 struct ErrorResponse {
-    message: String,
+    error: String,
 }
 
 pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
@@ -44,7 +44,7 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
 
     println!("{} {}", code, message);
     let json = warp::reply::json(&ErrorResponse {
-        message: message.into(),
+        error: message.into(),
     });
     Ok(warp::reply::with_status(json, code))
 }
