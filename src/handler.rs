@@ -25,7 +25,7 @@ pub async fn history_handler() -> std::result::Result<impl Reply, Rejection> {
 
 pub async fn account_handler(session_key: String) -> Result<impl Reply, Rejection> {
     match crate::session::get_account_by_session(&session_key) {
-        Ok(account) => Ok(account.to_json()),
+        Ok(account) => Ok(serde_json::to_string(&account).unwrap()),
         Err(e) => Err(OtherError(e).rejection()),
     }
 }
@@ -45,7 +45,7 @@ pub async fn change_name_handler(
             repos
                 .rename_account(&new)
                 .map_err(|e| OtherError(e).rejection())?;
-            Ok(new.to_json())
+            Ok(serde_json::to_string(&new).unwrap())
         }
         Err(e) => Err(OtherError(e).rejection()),
     }
